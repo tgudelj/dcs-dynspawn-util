@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\tgudelj\\Documents\\dev\\dcs-dynspawn-util\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{04B5B323-A400-4F66-84C8-3472D9113228}|DCSDynamicTemplateHelper.csproj|c:\\users\\tgudelj\\documents\\dev\\dcs-dynspawn-util\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{04B5B323-A400-4F66-84C8-3472D9113228}|DCSDynamicTemplateHelper.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\tgudelj\\Documents\\dev\\dcs-dynspawn-util\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\tgudelj\\Documents\\dev\\dcs-dynspawn-util\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAYBAAAAAAAAAAAYwCMBAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-27T09:45:41.53Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
