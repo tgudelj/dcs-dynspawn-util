@@ -36,6 +36,7 @@ partial class frmMain {
         btnApply = new Button();
         btnSelectAll = new Button();
         btnClear = new Button();
+        lblSelectedGroupInfo = new Label();
         menuMain.SuspendLayout();
         SuspendLayout();
         // 
@@ -68,13 +69,15 @@ partial class frmMain {
         // 
         // lbMizGroups
         // 
-        lbMizGroups.Font = new Font("Segoe UI", 12F);
+        lbMizGroups.Font = new Font("Segoe UI", 10F);
         lbMizGroups.FormattingEnabled = true;
-        lbMizGroups.ItemHeight = 21;
+        lbMizGroups.ItemHeight = 17;
         lbMizGroups.Location = new Point(19, 57);
         lbMizGroups.Name = "lbMizGroups";
-        lbMizGroups.Size = new Size(567, 403);
+        lbMizGroups.Size = new Size(567, 395);
+        lbMizGroups.Sorted = true;
         lbMizGroups.TabIndex = 1;
+        lbMizGroups.SelectedIndexChanged += lbMizGroups_SelectedIndexChanged;
         // 
         // label1
         // 
@@ -87,15 +90,16 @@ partial class frmMain {
         // 
         // lbApplyTo
         // 
-        lbApplyTo.Font = new Font("Segoe UI", 12F);
+        lbApplyTo.Font = new Font("Segoe UI", 10F);
         lbApplyTo.FormattingEnabled = true;
-        lbApplyTo.ItemHeight = 21;
+        lbApplyTo.ItemHeight = 17;
         lbApplyTo.Location = new Point(683, 78);
         lbApplyTo.Name = "lbApplyTo";
         lbApplyTo.SelectionMode = SelectionMode.MultiExtended;
-        lbApplyTo.Size = new Size(282, 382);
+        lbApplyTo.Size = new Size(282, 378);
         lbApplyTo.Sorted = true;
-        lbApplyTo.TabIndex = 2;
+        lbApplyTo.TabIndex = 4;
+        lbApplyTo.SelectedIndexChanged += lbApplyTo_SelectedIndexChanged;
         // 
         // lblApplyToTypes
         // 
@@ -133,7 +137,7 @@ partial class frmMain {
         btnSelectAll.Location = new Point(683, 51);
         btnSelectAll.Name = "btnSelectAll";
         btnSelectAll.Size = new Size(113, 23);
-        btnSelectAll.TabIndex = 7;
+        btnSelectAll.TabIndex = 2;
         btnSelectAll.Text = "SELECT ALL";
         btnSelectAll.UseVisualStyleBackColor = true;
         btnSelectAll.Click += btnSelectAll_Click;
@@ -143,16 +147,25 @@ partial class frmMain {
         btnClear.Location = new Point(890, 51);
         btnClear.Name = "btnClear";
         btnClear.Size = new Size(75, 23);
-        btnClear.TabIndex = 8;
+        btnClear.TabIndex = 3;
         btnClear.Text = "CLEAR";
         btnClear.UseVisualStyleBackColor = true;
         btnClear.Click += btnClear_Click;
+        // 
+        // lblSelectedGroupInfo
+        // 
+        lblSelectedGroupInfo.Font = new Font("Segoe UI", 12F);
+        lblSelectedGroupInfo.Location = new Point(19, 471);
+        lblSelectedGroupInfo.Name = "lblSelectedGroupInfo";
+        lblSelectedGroupInfo.Size = new Size(567, 65);
+        lblSelectedGroupInfo.TabIndex = 9;
         // 
         // frmMain
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(977, 545);
+        Controls.Add(lblSelectedGroupInfo);
         Controls.Add(btnClear);
         Controls.Add(btnSelectAll);
         Controls.Add(btnApply);
@@ -186,4 +199,5 @@ partial class frmMain {
     private Button btnApply;
     private Button btnSelectAll;
     private Button btnClear;
+    private Label lblSelectedGroupInfo;
 }

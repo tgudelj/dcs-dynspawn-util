@@ -17,9 +17,13 @@ internal class DCSTemplateGroupInfo {
 
     public string DCSVehicleType { get; set; }
 
+    public string Coalition { get; set; }
+
+    public long Country { get; set; }
+
     public string DisplayName {
         get{
-        return $"[{this.GroupId}] {this.DCSVehicleType} {this.GroupName}";
+        return $"{this.DCSVehicleType} {this.GroupName} [{this.GroupId}]";
         }
     }
 }

@@ -87,6 +87,8 @@ public partial class frmMain : Form {
                                         groupInfo.GroupTable = group;
                                         groupInfo.MAXIndexInCategory = maxIndex;
                                         groupInfo.DCSVehicleType = firstUnit["type"] as string;
+                                        groupInfo.Coalition = coalitionKey;
+                                        groupInfo.Country = countryIndex;
                                         mizGroups.Add(groupInfo);
                                     }
                                 }
@@ -142,7 +144,28 @@ public partial class frmMain : Form {
 
     private void btnApply_Click(object sender, EventArgs e) {
         //Add required groups to mission, set ["dynSpawnTemplate"] = true to added groups and remember their groupIds
+        Lua lua = new Lua();
+        lua.State.Encoding = Encoding.UTF8;
 
         //Add ["linkDynTempl"] = groupId to each warehouse
+    }
+
+    private LuaTable CloneTable(LuaTable table) { 
+    
+    }
+
+    private void lbMizGroups_SelectedIndexChanged(object sender, EventArgs e) {
+        if (lbMizGroups.SelectedItems.Count == 0) {
+            return;
+        }
+        DCSTemplateGroupInfo selectedGroup = lbMizGroups.SelectedItem as DCSTemplateGroupInfo;
+        lblSelectedGroupInfo.Text = $"Name: {selectedGroup.GroupName}\nType: {selectedGroup.DCSVehicleType}\nGroupId {selectedGroup.GroupId}";
+    }
+
+    private void lbApplyTo_SelectedIndexChanged(object sender, EventArgs e) {
+        List< DCSNameTypeItem> selectedItems = new List< DCSNameTypeItem>();
+        foreach (int i in lbApplyTo.SelectedIndices) {
+            selectedItems.Add(lbApplyTo.Items[i] as DCSNameTypeItem);
+        }
     }
 }
