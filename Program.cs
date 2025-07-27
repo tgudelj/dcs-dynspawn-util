@@ -16,7 +16,7 @@ namespace DCSDynamicTemplateHelper
             // see https://aka.ms/applicationconfiguration.
 
             var builder = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             Configuration = builder.Build();
 
             ApplicationConfiguration.Initialize();

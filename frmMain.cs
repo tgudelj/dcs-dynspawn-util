@@ -18,6 +18,7 @@ namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
 
     AppSettings settings;
+    
     public frmMain() {
         InitializeComponent();
     }
@@ -104,6 +105,12 @@ public partial class frmMain : Form {
     }
 
     private void frmMain_Load(object sender, EventArgs e) {
-        settings = Program.Configuration.GetSection("settings").Get<AppSettings>();
+        settings = Program.Configuration.GetSection("Settings").Get<AppSettings>();
+        lbApplyTo.DataSource = settings.Flyable;
+        lbApplyTo.DisplayMember = "DisplayName";
+    }
+
+    private void btnCancel_Click(object sender, EventArgs e) {
+        Application.Exit();
     }
 }
