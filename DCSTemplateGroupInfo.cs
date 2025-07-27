@@ -7,11 +7,19 @@ using System.Threading.Tasks;
 
 namespace DCSDynamicTemplateHelper;
 internal class DCSTemplateGroupInfo {
-    public string name { get; set; }
+    public string GroupName { get; set; }
 
-    public string groupId { get; set; }
+    public long GroupId { get; set; }
 
-    public LuaTable route { get; set;}
+    public LuaTable GroupTable { get; set; }
 
     public int MAXIndexInCategory { get; set; }
+
+    public string DCSVehicleType { get; set; }
+
+    public string DisplayName {
+        get{
+        return $"[{this.GroupId}] {this.DCSVehicleType} {this.GroupName}";
+        }
+    }
 }

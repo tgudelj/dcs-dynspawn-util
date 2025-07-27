@@ -28,14 +28,14 @@ partial class frmMain {
         fileToolStripMenuItem = new ToolStripMenuItem();
         miOpenMission = new ToolStripMenuItem();
         dlgOpenFile = new OpenFileDialog();
-        lbFoundGroups = new ListBox();
+        lbMizGroups = new ListBox();
         label1 = new Label();
         lbApplyTo = new ListBox();
-        lbApplyToTypes = new Label();
+        lblApplyToTypes = new Label();
         btnCancel = new Button();
         btnApply = new Button();
         btnSelectAll = new Button();
-        button1 = new Button();
+        btnClear = new Button();
         menuMain.SuspendLayout();
         SuspendLayout();
         // 
@@ -44,7 +44,7 @@ partial class frmMain {
         menuMain.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
         menuMain.Location = new Point(0, 0);
         menuMain.Name = "menuMain";
-        menuMain.Size = new Size(565, 24);
+        menuMain.Size = new Size(977, 24);
         menuMain.TabIndex = 0;
         menuMain.Text = "menuStrip1";
         // 
@@ -66,14 +66,15 @@ partial class frmMain {
         // 
         dlgOpenFile.Filter = "DCS World Mission file | *.miz";
         // 
-        // lbFoundGroups
+        // lbMizGroups
         // 
-        lbFoundGroups.FormattingEnabled = true;
-        lbFoundGroups.ItemHeight = 15;
-        lbFoundGroups.Location = new Point(19, 57);
-        lbFoundGroups.Name = "lbFoundGroups";
-        lbFoundGroups.Size = new Size(245, 409);
-        lbFoundGroups.TabIndex = 1;
+        lbMizGroups.Font = new Font("Segoe UI", 12F);
+        lbMizGroups.FormattingEnabled = true;
+        lbMizGroups.ItemHeight = 21;
+        lbMizGroups.Location = new Point(19, 57);
+        lbMizGroups.Name = "lbMizGroups";
+        lbMizGroups.Size = new Size(567, 403);
+        lbMizGroups.TabIndex = 1;
         // 
         // label1
         // 
@@ -86,28 +87,29 @@ partial class frmMain {
         // 
         // lbApplyTo
         // 
+        lbApplyTo.Font = new Font("Segoe UI", 12F);
         lbApplyTo.FormattingEnabled = true;
-        lbApplyTo.ItemHeight = 15;
-        lbApplyTo.Location = new Point(305, 87);
+        lbApplyTo.ItemHeight = 21;
+        lbApplyTo.Location = new Point(683, 78);
         lbApplyTo.Name = "lbApplyTo";
         lbApplyTo.SelectionMode = SelectionMode.MultiExtended;
-        lbApplyTo.Size = new Size(242, 379);
+        lbApplyTo.Size = new Size(282, 382);
         lbApplyTo.Sorted = true;
         lbApplyTo.TabIndex = 2;
         // 
-        // lbApplyToTypes
+        // lblApplyToTypes
         // 
-        lbApplyToTypes.AutoSize = true;
-        lbApplyToTypes.Location = new Point(305, 26);
-        lbApplyToTypes.Name = "lbApplyToTypes";
-        lbApplyToTypes.Size = new Size(133, 15);
-        lbApplyToTypes.TabIndex = 4;
-        lbApplyToTypes.Text = "Apply template to types";
+        lblApplyToTypes.AutoSize = true;
+        lblApplyToTypes.Location = new Point(683, 24);
+        lblApplyToTypes.Name = "lblApplyToTypes";
+        lblApplyToTypes.Size = new Size(133, 15);
+        lblApplyToTypes.TabIndex = 4;
+        lblApplyToTypes.Text = "Apply template to types";
         // 
         // btnCancel
         // 
         btnCancel.Font = new Font("Segoe UI", 10F);
-        btnCancel.Location = new Point(343, 481);
+        btnCancel.Location = new Point(761, 481);
         btnCancel.Name = "btnCancel";
         btnCancel.Size = new Size(95, 33);
         btnCancel.TabIndex = 5;
@@ -118,44 +120,47 @@ partial class frmMain {
         // btnApply
         // 
         btnApply.Font = new Font("Segoe UI", 10F);
-        btnApply.Location = new Point(444, 481);
+        btnApply.Location = new Point(862, 481);
         btnApply.Name = "btnApply";
         btnApply.Size = new Size(103, 33);
         btnApply.TabIndex = 6;
         btnApply.Text = "Apply";
         btnApply.UseVisualStyleBackColor = true;
+        btnApply.Click += btnApply_Click;
         // 
         // btnSelectAll
         // 
-        btnSelectAll.Location = new Point(305, 51);
+        btnSelectAll.Location = new Point(683, 51);
         btnSelectAll.Name = "btnSelectAll";
         btnSelectAll.Size = new Size(113, 23);
         btnSelectAll.TabIndex = 7;
         btnSelectAll.Text = "SELECT ALL";
         btnSelectAll.UseVisualStyleBackColor = true;
+        btnSelectAll.Click += btnSelectAll_Click;
         // 
-        // button1
+        // btnClear
         // 
-        button1.Location = new Point(472, 51);
-        button1.Name = "button1";
-        button1.Size = new Size(75, 23);
-        button1.TabIndex = 8;
-        button1.Text = "CLEAR";
-        button1.UseVisualStyleBackColor = true;
+        btnClear.Location = new Point(890, 51);
+        btnClear.Name = "btnClear";
+        btnClear.Size = new Size(75, 23);
+        btnClear.TabIndex = 8;
+        btnClear.Text = "CLEAR";
+        btnClear.UseVisualStyleBackColor = true;
+        btnClear.Click += btnClear_Click;
         // 
         // frmMain
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(565, 545);
-        Controls.Add(button1);
+        ClientSize = new Size(977, 545);
+        Controls.Add(btnClear);
         Controls.Add(btnSelectAll);
         Controls.Add(btnApply);
         Controls.Add(btnCancel);
-        Controls.Add(lbApplyToTypes);
+        Controls.Add(lblApplyToTypes);
         Controls.Add(lbApplyTo);
         Controls.Add(label1);
-        Controls.Add(lbFoundGroups);
+        Controls.Add(lbMizGroups);
         Controls.Add(menuMain);
         MainMenuStrip = menuMain;
         Name = "frmMain";
@@ -173,12 +178,12 @@ partial class frmMain {
     private ToolStripMenuItem fileToolStripMenuItem;
     private ToolStripMenuItem miOpenMission;
     private OpenFileDialog dlgOpenFile;
-    private ListBox lbFoundGroups;
+    private ListBox lbMizGroups;
     private Label label1;
     private ListBox lbApplyTo;
-    private Label lbApplyToTypes;
+    private Label lblApplyToTypes;
     private Button btnCancel;
     private Button btnApply;
     private Button btnSelectAll;
-    private Button button1;
+    private Button btnClear;
 }

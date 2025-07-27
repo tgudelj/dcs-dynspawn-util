@@ -18,7 +18,8 @@ namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
 
     AppSettings settings;
-    
+    List<DCSTemplateGroupInfo> mizGroups = new List<DCSTemplateGroupInfo>();
+    LuaTable mizTable = null;
     public frmMain() {
         InitializeComponent();
     }
@@ -28,13 +29,26 @@ public partial class frmMain : Form {
         if (result != DialogResult.OK) {
             return;
         }
-        Lua lua = new Lua();
-        lua.State.Encoding = Encoding.UTF8;
+        //Create a backup
         string fileName = dlgOpenFile.FileName;
         FileInfo original = new FileInfo(fileName);
         string bakcup = original.FullName + DateTime.Now.ToString("_yyyy-MM-dd-HH-mm-ss") + ".bak";
         File.Copy(original.FullName, bakcup);
-        using (ZipArchive archive = ZipFile.Open(fileName, ZipArchiveMode.Update)) {
+        //Clear list box
+        lbMizGroups.DataBindings.Clear();
+        lbMizGroups.DataSource = null;
+        lbMizGroups.Items.Clear();
+        mizGroups.Clear();
+        //Load groups and bind list box
+        LoadGroupsFromMission(fileName);
+        lbMizGroups.DataSource = mizGroups;
+        lbMizGroups.DisplayMember = "DisplayName";
+    }
+
+    private void LoadGroupsFromMission(string filename) {
+        Lua lua = new Lua();
+        lua.State.Encoding = Encoding.UTF8;
+        using (ZipArchive archive = ZipFile.Open(filename, ZipArchiveMode.Update)) {
             ZipArchiveEntry missionLuaFile = archive.GetEntry("mission");
             using (StreamReader sr = new StreamReader(missionLuaFile.Open())) {
                 string missionLua = sr.ReadToEnd();
@@ -67,11 +81,13 @@ public partial class frmMain : Form {
                                     if (group.Keys.Cast<string>().Contains("dynSpawnTemplate")) {
                                         LuaTable unitsTable = group["units"] as LuaTable;
                                         LuaTable firstUnit = unitsTable[1] as LuaTable;
-                                        Debug.WriteLine($"group: {firstUnit["type"]} {group["name"]}");
-                                        Debug.WriteLine($"maxIndex: {maxIndex}");
-                                        if ((bool)group["dynSpawnTemplate"] == true) {
-                                            Console.WriteLine("Found a template group");
-                                        }
+                                        DCSTemplateGroupInfo groupInfo = new DCSTemplateGroupInfo();
+                                        groupInfo.GroupId = (long)group["groupId"];
+                                        groupInfo.GroupName = group["name"] as string;
+                                        groupInfo.GroupTable = group;
+                                        groupInfo.MAXIndexInCategory = maxIndex;
+                                        groupInfo.DCSVehicleType = firstUnit["type"] as string;
+                                        mizGroups.Add(groupInfo);
                                     }
                                 }
                             }
@@ -112,5 +128,21 @@ public partial class frmMain : Form {
 
     private void btnCancel_Click(object sender, EventArgs e) {
         Application.Exit();
+    }
+
+    private void btnSelectAll_Click(object sender, EventArgs e) {
+        for (int i = 0; i < lbApplyTo.Items.Count; i++) {
+            lbApplyTo.SetSelected(i, true);
+        }
+    }
+
+    private void btnClear_Click(object sender, EventArgs e) {
+        lbApplyTo.SelectedIndex = -1;
+    }
+
+    private void btnApply_Click(object sender, EventArgs e) {
+        //Add required groups to mission, set ["dynSpawnTemplate"] = true to added groups and remember their groupIds
+
+        //Add ["linkDynTempl"] = groupId to each warehouse
     }
 }
