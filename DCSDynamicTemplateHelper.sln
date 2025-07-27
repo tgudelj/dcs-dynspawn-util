@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCSDynamicTemplateHelper", "DCSDynamicTemplateHelper.csproj", "{04B5B323-A400-4F66-84C8-3472D9113228}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04B5B323-A400-4F66-84C8-3472D9113228}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04B5B323-A400-4F66-84C8-3472D9113228}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04B5B323-A400-4F66-84C8-3472D9113228}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04B5B323-A400-4F66-84C8-3472D9113228}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E3F08E80-E256-4278-AEB3-5A093C60EA5E}
+	EndGlobalSection
+EndGlobal
