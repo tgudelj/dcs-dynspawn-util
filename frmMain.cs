@@ -330,9 +330,10 @@ public partial class frmMain : Form {
                 writer.Write(mission);
             }
             using (StreamWriter writer = new StreamWriter(warehousesLuaFile.Open())) {
-                writer.Write(warehouses);
+                //writer.Write(warehouses);
             }
         }
+        MessageBox.Show("Done");
     }
 
     //Waaay faster than Lua approach
