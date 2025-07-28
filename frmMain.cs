@@ -180,54 +180,6 @@ public partial class frmMain : Form {
         error(""cannot serialize a "" .. type(o))
       end
     end
-    
-    mission = {
-        	[""groundControl""] = 
-	{
-		[""passwords""] = 
-		{
-			[""artillery_commander""] = {
-			    [""something""] = {
-			        [""anothertable""] = {
-			            [""foo""] = ""bar"",
-			            [""imanil""] = nil
-			        }
-			    }
-			},
-			[""instructor""] = {},
-			[""observer""] = {},
-			[""forward_observer""] = {},
-		}, -- end of [""passwords""]
-		[""roles""] = 
-		{
-			[""artillery_commander""] = 
-			{
-				[""neutrals""] = 0,
-				[""blue""] = 0,
-				[""red""] = 0,
-			}, -- end of [""artillery_commander""]
-			[""instructor""] = 
-			{
-				[""neutrals""] = 1,
-				[""blue""] = 0,
-				[""red""] = 0,
-			}, -- end of [""instructor""]
-			[""observer""] = 
-			{
-				[""neutrals""] = 1,
-				[""blue""] = 1,
-				[""red""] = 1,
-			}, -- end of [""observer""]
-			[""forward_observer""] = 
-			{
-				[""neutrals""] = 0,
-				[""blue""] = 0,
-				[""red""] = 0,
-			}, -- end of [""forward_observer""]
-		}, -- end of [""roles""]
-		[""isPilotControlVehicles""] = false,
-	}
-    }
         ";
         Lua lua = new Lua();
         lua.State.Encoding = Encoding.UTF8;
