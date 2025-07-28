@@ -7,22 +7,24 @@ using System.Threading.Tasks;
 namespace DCSDynamicTemplateHelper;
 public class AppSettings {
     public AppSettings() {
-        Flyable = new List<DCSNameTypeItem>();
+        Flyable = new List<DCSTypeInfo>();
     }
 
-    public List<DCSNameTypeItem> Flyable { get; set; }
+    public List<DCSTypeInfo> Flyable { get; set; }
 }
 
-public class DCSNameTypeItem {
-    public DCSNameTypeItem() {
+public class DCSTypeInfo {
+    public DCSTypeInfo() {
 
     }
 
-    public DCSNameTypeItem(string displayName, string dCSType) {
+    public DCSTypeInfo(string displayName, string dCSType, string category) {
         DisplayName = displayName;
         DCSType = dCSType;
+        Category = category;
     }
 
     public string DisplayName {  get; set; }
     public string DCSType { get; set; }
+    public string Category { get; set; }
 }

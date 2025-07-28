@@ -1,18 +1,18 @@
-﻿using NLua;
+﻿using Microsoft.Extensions.Configuration;
+using NLua;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO.Compression;
+using System.Linq;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Linq;
-using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
 
 namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
@@ -21,7 +21,7 @@ public partial class frmMain : Form {
     List<DCSTemplateGroupInfo> GroupsInMission = new List<DCSTemplateGroupInfo>();
     LuaTable MissionTable = null;
     internal BindingList<DCSTemplateGroupInfo> _groups = new BindingList<DCSTemplateGroupInfo>();
-    internal BindingList<DCSNameTypeItem> _typesList = new BindingList<DCSNameTypeItem>();
+    internal BindingList<DCSTypeInfo> _typesList = new BindingList<DCSTypeInfo>();
     DCSTemplateGroupInfo SelectedTemplatGroup = null;
     long MaxGroupId = 1; //Maximum group id found in mission
     long MaxUnitId = 1; //Maximum unit id found in mission
@@ -35,11 +35,12 @@ public partial class frmMain : Form {
     private void frmMain_Load(object sender, EventArgs e) {
         lua.State.Encoding = Encoding.UTF8;
         settings = Program.Configuration.GetSection("Settings").Get<AppSettings>();
-        foreach (DCSNameTypeItem item in settings.Flyable) {
+        foreach (DCSTypeInfo item in settings.Flyable) {
             _typesList.Add(item);
         }
         lbApplyTo.DataSource = _typesList;
         lbApplyTo.DisplayMember = "DisplayName";
+        lbApplyTo.SelectedIndex = -1;
 
         lbMizGroups.DataSource = _groups;
         lbMizGroups.DisplayMember = "DisplayName";
@@ -70,7 +71,7 @@ public partial class frmMain : Form {
     private void btnClearApplyToFilter_Click(object sender, EventArgs e) {
         txtApplyToFilter.Text = "";
         _typesList.Clear();
-        foreach (DCSNameTypeItem item in settings.Flyable) { 
+        foreach (DCSTypeInfo item in settings.Flyable) { 
             _typesList.Add(item);
         }
     }
@@ -95,12 +96,12 @@ public partial class frmMain : Form {
         string searchString = txtApplyToFilter.Text;
         _typesList.Clear();
         if (searchString.Length < 2) {
-            foreach (DCSNameTypeItem item in settings.Flyable) {
+            foreach (DCSTypeInfo item in settings.Flyable) {
                 _typesList.Add(item);
             }
             return; 
         }
-        foreach (DCSNameTypeItem t in settings.Flyable) {
+        foreach (DCSTypeInfo t in settings.Flyable) {
             if (t.DisplayName.Contains(searchString)) {
                 _typesList.Add(t);
             }
@@ -117,9 +118,9 @@ public partial class frmMain : Form {
     }
 
     private void lbApplyTo_SelectedIndexChanged(object sender, EventArgs e) {
-        List<DCSNameTypeItem> selectedItems = new List<DCSNameTypeItem>();
+        List<DCSTypeInfo> selectedItems = new List<DCSTypeInfo>();
         foreach (int i in lbApplyTo.SelectedIndices) {
-            selectedItems.Add(lbApplyTo.Items[i] as DCSNameTypeItem);
+            selectedItems.Add(lbApplyTo.Items[i] as DCSTypeInfo);
         }
     }
 
@@ -149,7 +150,7 @@ public partial class frmMain : Form {
                 string missionLua = sr.ReadToEnd();
                 var mission = lua.DoString(missionLua + Environment.NewLine + "return mission");
                 MissionTable = (LuaTable)mission[0];
-                LuaTable coalitionsTable = GetTableWithPath("coalition", MissionTable);
+                LuaTable coalitionsTable = MissionTable["coalition"] as LuaTable;
                 //iterate coalitions
                 foreach (string coalitionKey in coalitionsTable.Keys.Cast<string>()) {
                     LuaTable coalitionTable = coalitionsTable[coalitionKey] as LuaTable;
@@ -205,18 +206,15 @@ public partial class frmMain : Form {
         foreach (DCSTemplateGroupInfo group in GroupsInMission) { 
             _groups.Add(group);
         }
+        lbMizGroups.SelectedIndex = -1;
     }
 
-    private LuaTable GetTableWithPath(string path, LuaTable table) {
-        string[] arrPath = path.Split("/");
-
+    private LuaTable GetTableByPath(object[] path, LuaTable table) {
         LuaTable currentTable = table;
-        string currentPath = "";
-        for (int i = 0; i < arrPath.Length; i++) {
-            string key = arrPath[i];
-            currentPath += "/" + key;
+        for (int i = 0; i < path.Length; i++) {
+            object key = path[i];
             if (currentTable != null) {
-                if (!currentTable.Keys.Cast<string>().ToList().Contains(key)) {
+                if (!currentTable.Keys.Cast<object>().ToList().Contains(key)) {
                     throw new KeyNotFoundException($"Key '{key}' not found in the table.");
                 } else {
 
@@ -237,19 +235,56 @@ public partial class frmMain : Form {
         if (lbApplyTo.SelectedItems.Count == 0) {
             return;
         }
-        foreach (DCSNameTypeItem typeItem in lbApplyTo.SelectedItems) {
+        long currentGroupId = MaxGroupId + 1;
+        long currentUnitId = MaxUnitId + 1;
+        //build a dictionary of dcs type to template group id, we will need it when modifying warehouse
+        Dictionary<string, long> TypeTemplateGroupMap = new Dictionary<string, long>();
+        //Add groups to mission
+        foreach (DCSTypeInfo typeItem in lbApplyTo.SelectedItems) {
             Debug.WriteLine($@"Creating dynamic template group for {typeItem.DisplayName} [{typeItem.DCSType}]");
             LuaTable clone = CloneLuaTable(SelectedTemplatGroup.GroupTable);
             string groupPrefix = $"DST-{typeItem.DCSType}";
             clone["dynSpawnTemplate"] = true;
             clone["name"] = groupPrefix;
+            clone["groupId"] = currentGroupId;
+            clone["tasks"] = DeserializeLuaTable("{}");
+            clone["task"] = "Nothing";
             LuaTable unitsTable = clone["units"] as LuaTable;
             LuaTable firstUnit = unitsTable[1] as LuaTable;
             firstUnit["name"] = $"{groupPrefix}-1";
+            firstUnit["unitId"] = currentUnitId;
+            firstUnit["type"] = typeItem.DCSType;
+            //? Payload
+            LuaTable payloadTable = firstUnit["payload"] as LuaTable;
+            payloadTable["pylons"] = DeserializeLuaTable("{}");
+            //? Fuel
+            //Now assemble the table backwards
 
+
+
+            TypeTemplateGroupMap.Add(typeItem.DCSType, currentGroupId);
+            //we need to insert this new group into 
+            //coalition/red\blue|neutrals/country/[?]/plane|helicopter/group/
+            //LuaTable injectTable = GetTableByPath(["coalition", "neutrals", "country", 1L, typeItem.Category], MissionTable);
+            //LuaTable injectTable = GetTableByPath(["coalition", "neutrals", "country", 1L], MissionTable);
+            //if (!injectTable.Keys.Cast<string>().ToList().Contains(typeItem.Category)) {
+            //    //no entry for our category, we need to add it
+            //    injectTable[typeItem.Category] = DeserializeLuaTable("{}");                
+            //}
+
+            LuaTable injectTable = ((LuaTable)((LuaTable)((LuaTable)((LuaTable)MissionTable["coalition"])["neutrals"])["country"])[1]);
+            if (!injectTable.Keys.Cast<string>().ToList().Contains(typeItem.Category)) {
+                injectTable[typeItem.Category] = DeserializeLuaTable("{}");
+            }
+
+            int count = ((LuaTable)injectTable[typeItem.Category]).Keys.Count;
+            ((LuaTable)injectTable[typeItem.Category])[count + 1] = clone;
+
+            currentGroupId++;
+            currentUnitId++;
         }
-        
-
+        string s = SerializeLuaTable(MissionTable);
+        Debug.WriteLine(s);
         //Add ["linkDynTempl"] = groupId to each warehouse
     }
 
@@ -302,6 +337,28 @@ function ___serializeTable(tbl)
                             end");
         var func = lua["___returnTable"] as LuaFunction;
         LuaTable newTable = func.Call().First() as LuaTable;
+        return newTable;
+    }
+
+    private LuaTable DeserializeLuaTable(string tableLua) {
+        lua.DoString($@"function ___returnTable() 
+                                return {tableLua}
+                            end");
+        var func = lua["___returnTable"] as LuaFunction;
+        LuaTable newTable = func.Call().First() as LuaTable;
+        return newTable;
+    }
+
+    private LuaTable AddToIndexTable(LuaTable table, LuaTable tableToInsert) {
+        string luaString = @"
+        function ___addToTable(table1, table2)
+            table.insert(table, tableToInsert)
+            return table1
+        end
+        ";
+        lua.DoString(luaString);
+        var func = lua["___addToTable"] as LuaFunction;
+        LuaTable newTable = func.Call(table, tableToInsert).First() as LuaTable;
         return newTable;
     }
 }
