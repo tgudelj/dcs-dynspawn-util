@@ -16,22 +16,24 @@ using Microsoft.Extensions.Configuration;
 
 namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
-
+    Lua lua = new Lua();    
     AppSettings settings;
     List<DCSTemplateGroupInfo> GroupsInMission = new List<DCSTemplateGroupInfo>();
-    LuaTable mizTable = null;
+    LuaTable MissionTable = null;
     internal BindingList<DCSTemplateGroupInfo> _groups = new BindingList<DCSTemplateGroupInfo>();
     internal BindingList<DCSNameTypeItem> _typesList = new BindingList<DCSNameTypeItem>();
-
     DCSTemplateGroupInfo SelectedTemplatGroup = null;
-    List<DCSNameTypeItem> SelectedapplyToTypes = new List<DCSNameTypeItem>();
+    int MaxGroupId = 1; //Maximum group id found in mission
+    int MaxUnitId = 1; //Maximum unit id found in mission
 
     public frmMain() {
         InitializeComponent();
     }
 
-    #region Event handlers
+    #region ------------- Event handlers -------------
+
     private void frmMain_Load(object sender, EventArgs e) {
+        lua.State.Encoding = Encoding.UTF8;
         settings = Program.Configuration.GetSection("Settings").Get<AppSettings>();
         foreach (DCSNameTypeItem item in settings.Flyable) {
             _typesList.Add(item);
@@ -41,23 +43,6 @@ public partial class frmMain : Form {
 
         lbMizGroups.DataSource = _groups;
         lbMizGroups.DisplayMember = "DisplayName";
-    }
-
-    private void miOpenMission_Click(object sender, EventArgs e) {
-        DialogResult result = dlgOpenFile.ShowDialog();
-        if (result != DialogResult.OK) {
-            return;
-        }
-        //Create a backup
-        string fileName = dlgOpenFile.FileName;
-        FileInfo original = new FileInfo(fileName);
-        string bakcup = original.FullName + DateTime.Now.ToString("_yyyy-MM-dd-HH-mm-ss") + ".bak";
-        File.Copy(original.FullName, bakcup);
-        //Clear list box
-        _groups.Clear();
-        GroupsInMission.Clear();
-        //Load groups and bind list box
-        LoadGroupsFromMission(fileName);
     }
 
     private void btnCancel_Click(object sender, EventArgs e) {
@@ -124,10 +109,11 @@ public partial class frmMain : Form {
 
     private void lbMizGroups_SelectedIndexChanged(object sender, EventArgs e) {
         if (lbMizGroups.SelectedItems.Count == 0) {
+            SelectedTemplatGroup = null;
             return;
         }
-        DCSTemplateGroupInfo selectedGroup = lbMizGroups.SelectedItem as DCSTemplateGroupInfo;
-        lblSelectedGroupInfo.Text = $"Name: {selectedGroup.GroupName}\nType: {selectedGroup.DCSVehicleType}\nGroupId {selectedGroup.GroupId}";
+        SelectedTemplatGroup = lbMizGroups.SelectedItem as DCSTemplateGroupInfo;
+        lblSelectedGroupInfo.Text = $"Name: {SelectedTemplatGroup.GroupName}\nType: {SelectedTemplatGroup.DCSVehicleType}\nGroupId {SelectedTemplatGroup.GroupId}";
     }
 
     private void lbApplyTo_SelectedIndexChanged(object sender, EventArgs e) {
@@ -136,20 +122,34 @@ public partial class frmMain : Form {
             selectedItems.Add(lbApplyTo.Items[i] as DCSNameTypeItem);
         }
     }
+
+    private void miOpenMission_Click(object sender, EventArgs e) {
+        DialogResult result = dlgOpenFile.ShowDialog();
+        if (result != DialogResult.OK) {
+            return;
+        }
+        //Create a backup
+        string fileName = dlgOpenFile.FileName;
+        FileInfo original = new FileInfo(fileName);
+        string bakcup = original.FullName + DateTime.Now.ToString("_yyyy-MM-dd-HH-mm-ss") + ".bak";
+        File.Copy(original.FullName, bakcup);
+        //Clear list box
+        _groups.Clear();
+        GroupsInMission.Clear();
+        //Load groups and bind list box
+        LoadGroupsFromMission(fileName);
+    }
+
     #endregion
 
-
-
     private void LoadGroupsFromMission(string filename) {
-        Lua lua = new Lua();
-        lua.State.Encoding = Encoding.UTF8;
         using (ZipArchive archive = ZipFile.Open(filename, ZipArchiveMode.Update)) {
             ZipArchiveEntry missionLuaFile = archive.GetEntry("mission");
             using (StreamReader sr = new StreamReader(missionLuaFile.Open())) {
                 string missionLua = sr.ReadToEnd();
                 var mission = lua.DoString(missionLua + Environment.NewLine + "return mission");
-                LuaTable missionTable = (LuaTable)mission[0];
-                LuaTable coalitionsTable = GetTableWithPath("coalition", missionTable);
+                MissionTable = (LuaTable)mission[0];
+                LuaTable coalitionsTable = GetTableWithPath("coalition", MissionTable);
                 //iterate coalitions
                 foreach (string coalitionKey in coalitionsTable.Keys.Cast<string>()) {
                     LuaTable coalitionTable = coalitionsTable[coalitionKey] as LuaTable;
@@ -221,51 +221,79 @@ public partial class frmMain : Form {
         return currentTable;
     }
 
-
     private void btnApply_Click(object sender, EventArgs e) {
         //Add required groups to mission, set ["dynSpawnTemplate"] = true to added groups and remember their groupIds
-        string ser = Serialize(GroupsInMission[0].GroupTable);
+        if (SelectedTemplatGroup == null) {
+            return;
+        }
+        if (lbApplyTo.SelectedItems.Count == 0) {
+            return;
+        }
+        foreach (DCSNameTypeItem typeItem in lbApplyTo.SelectedItems) {
+            Debug.WriteLine($@"Creating dynamic template group for {typeItem.DisplayName} [{typeItem.DCSType}]");
+            LuaTable clone = CloneLuaTable(SelectedTemplatGroup.GroupTable);
+            string groupPrefix = $"DST-{typeItem.DCSType}";
+            clone["dynSpawnTemplate"] = true;
+            clone["name"] = groupPrefix;
+            LuaTable unitsTable = clone["units"] as LuaTable;
+            LuaTable firstUnit = unitsTable[1] as LuaTable;
+            firstUnit["name"] = $"{groupPrefix}-1";
+
+        }
+        
 
         //Add ["linkDynTempl"] = groupId to each warehouse
     }
 
-    private string Serialize(LuaTable table) {
+    private string SerializeLuaTable(LuaTable table) {
         string luaSerializer = @"
-    function serialize (o, ident)
-      if (ident == nil) then
-          ident = "" ""
-      end
-      if (type(o) == mil or o == nil) then
-        io.write(""nil"")
-      elseif type(o) == ""number"" then
-        io.write(o)
-      elseif type(o) == ""string"" then
-        io.write(string.format(""%q"", o))
-      elseif type(o) == ""boolean"" then
-        io.write(string.format(""%s"", o))
-      elseif type(o) == ""table"" then
-        io.write(""{\n"")
-        for k,v in pairs(o) do
-           io.write(ident..""   "")
-		   if(type(k) == ""string"") then
-			io.write(string.format(""[%q] = "", k))
-		   elseif(type(k) == ""number"") then
-			io.write(""["", k, ""\""] = "")
-		   end          
-          serialize(v, ident..""   "")
-          io.write("",\n"")
-        end
-        io.write(ident..""}"")
-      else
-        error(""cannot serialize a "" .. type(o))
-      end
+function ___serializeTable(tbl)
+	local out = """"		
+		local function serialize (o, ident)
+		  if (ident == nil) then
+			  ident = "" ""
+		  end
+		  if type(o) == ""number"" then
+			out = out..o
+		  elseif type(o) == ""string"" then
+			out = out..string.format(""%q"", o)
+		  elseif type(o) == ""boolean"" then
+			out = out..string.format(""%s"", o)
+		  elseif type(o) == ""table"" then
+			out = out..""{\n""
+			for k,v in pairs(o) do
+			   out = out..ident..""   ""
+			   if(type(k) == ""string"") then
+				out = out..string.format(""[%q] = "", k)
+			   elseif(type(k) == ""number"") then
+				out=out..string.format(""[%d] = "", k)
+			   end          
+			  serialize(v, ident..""   "")
+			  out = out.."",\n""
+			end
+			out = out..ident..""}""
+		  else
+			error(""cannot serialize a "" .. type(o).. ""\nSerialized so far: ""..out)
+		  end
+		end
+		serialize(tbl)
+		io.write(out)
+		return out
     end
         ";
-        Lua lua = new Lua();
-        lua.State.Encoding = Encoding.UTF8;
         lua.DoString($"{luaSerializer}\n");
-        var serializeFunc = lua["serialize"] as LuaFunction;
+        var serializeFunc = lua["___serializeTable"] as LuaFunction;
         var res = (string)serializeFunc.Call(table).First();
         return res;
+    }
+
+    private LuaTable CloneLuaTable(LuaTable table) { 
+        string serialized = SerializeLuaTable(table);
+        lua.DoString($@"function ___returnTable() 
+                                return {serialized}
+                            end");
+        var func = lua["___returnTable"] as LuaFunction;
+        LuaTable newTable = func.Call().First() as LuaTable;
+        return newTable;
     }
 }

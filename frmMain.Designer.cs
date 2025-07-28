@@ -41,6 +41,7 @@ partial class frmMain {
         btnClearGroupsFilter = new Button();
         txtApplyToFilter = new TextBox();
         btnClearApplyToFilter = new Button();
+        lblTemplateGroupDescription = new Label();
         menuMain.SuspendLayout();
         SuspendLayout();
         // 
@@ -49,7 +50,7 @@ partial class frmMain {
         menuMain.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
         menuMain.Location = new Point(0, 0);
         menuMain.Name = "menuMain";
-        menuMain.Size = new Size(977, 24);
+        menuMain.Size = new Size(911, 24);
         menuMain.TabIndex = 0;
         menuMain.Text = "menuStrip1";
         // 
@@ -86,18 +87,18 @@ partial class frmMain {
         // label1
         // 
         label1.AutoSize = true;
-        label1.Location = new Point(20, 32);
+        label1.Location = new Point(19, 59);
         label1.Name = "label1";
-        label1.Size = new Size(81, 15);
+        label1.Size = new Size(102, 15);
         label1.TabIndex = 2;
-        label1.Text = "Found groups";
+        label1.Text = "Groups in mission";
         // 
         // lbApplyTo
         // 
         lbApplyTo.Font = new Font("Segoe UI", 10F);
         lbApplyTo.FormattingEnabled = true;
         lbApplyTo.ItemHeight = 17;
-        lbApplyTo.Location = new Point(683, 121);
+        lbApplyTo.Location = new Point(618, 121);
         lbApplyTo.Name = "lbApplyTo";
         lbApplyTo.SelectionMode = SelectionMode.MultiExtended;
         lbApplyTo.Size = new Size(282, 344);
@@ -108,7 +109,7 @@ partial class frmMain {
         // lblApplyToTypes
         // 
         lblApplyToTypes.AutoSize = true;
-        lblApplyToTypes.Location = new Point(683, 24);
+        lblApplyToTypes.Location = new Point(618, 24);
         lblApplyToTypes.Name = "lblApplyToTypes";
         lblApplyToTypes.Size = new Size(133, 15);
         lblApplyToTypes.TabIndex = 4;
@@ -117,7 +118,7 @@ partial class frmMain {
         // btnCancel
         // 
         btnCancel.Font = new Font("Segoe UI", 10F);
-        btnCancel.Location = new Point(761, 500);
+        btnCancel.Location = new Point(696, 500);
         btnCancel.Name = "btnCancel";
         btnCancel.Size = new Size(95, 33);
         btnCancel.TabIndex = 5;
@@ -128,7 +129,7 @@ partial class frmMain {
         // btnApply
         // 
         btnApply.Font = new Font("Segoe UI", 10F);
-        btnApply.Location = new Point(862, 500);
+        btnApply.Location = new Point(797, 500);
         btnApply.Name = "btnApply";
         btnApply.Size = new Size(103, 33);
         btnApply.TabIndex = 6;
@@ -138,7 +139,7 @@ partial class frmMain {
         // 
         // btnSelectAll
         // 
-        btnSelectAll.Location = new Point(683, 51);
+        btnSelectAll.Location = new Point(618, 51);
         btnSelectAll.Name = "btnSelectAll";
         btnSelectAll.Size = new Size(113, 23);
         btnSelectAll.TabIndex = 2;
@@ -148,7 +149,7 @@ partial class frmMain {
         // 
         // btnClear
         // 
-        btnClear.Location = new Point(890, 51);
+        btnClear.Location = new Point(825, 51);
         btnClear.Name = "btnClear";
         btnClear.Size = new Size(75, 23);
         btnClear.TabIndex = 3;
@@ -184,7 +185,7 @@ partial class frmMain {
         // 
         // txtApplyToFilter
         // 
-        txtApplyToFilter.Location = new Point(683, 91);
+        txtApplyToFilter.Location = new Point(618, 91);
         txtApplyToFilter.Name = "txtApplyToFilter";
         txtApplyToFilter.Size = new Size(243, 23);
         txtApplyToFilter.TabIndex = 12;
@@ -192,7 +193,7 @@ partial class frmMain {
         // 
         // btnClearApplyToFilter
         // 
-        btnClearApplyToFilter.Location = new Point(932, 91);
+        btnClearApplyToFilter.Location = new Point(867, 91);
         btnClearApplyToFilter.Name = "btnClearApplyToFilter";
         btnClearApplyToFilter.Size = new Size(32, 23);
         btnClearApplyToFilter.TabIndex = 13;
@@ -200,11 +201,21 @@ partial class frmMain {
         btnClearApplyToFilter.UseVisualStyleBackColor = true;
         btnClearApplyToFilter.Click += btnClearApplyToFilter_Click;
         // 
+        // lblTemplateGroupDescription
+        // 
+        lblTemplateGroupDescription.AutoSize = true;
+        lblTemplateGroupDescription.Location = new Point(19, 29);
+        lblTemplateGroupDescription.Name = "lblTemplateGroupDescription";
+        lblTemplateGroupDescription.Size = new Size(508, 15);
+        lblTemplateGroupDescription.TabIndex = 14;
+        lblTemplateGroupDescription.Text = "Waypoints of selected group will be used to create dynamic spawn templates for selected types";
+        // 
         // frmMain
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(977, 545);
+        ClientSize = new Size(911, 545);
+        Controls.Add(lblTemplateGroupDescription);
         Controls.Add(btnClearApplyToFilter);
         Controls.Add(txtApplyToFilter);
         Controls.Add(btnClearGroupsFilter);
@@ -221,7 +232,7 @@ partial class frmMain {
         Controls.Add(menuMain);
         MainMenuStrip = menuMain;
         Name = "frmMain";
-        Text = "frmMain";
+        Text = "Dynamic Spawn Template Helper";
         Load += frmMain_Load;
         menuMain.ResumeLayout(false);
         menuMain.PerformLayout();
@@ -248,4 +259,5 @@ partial class frmMain {
     private Button btnClearGroupsFilter;
     private TextBox txtApplyToFilter;
     private Button btnClearApplyToFilter;
+    private Label lblTemplateGroupDescription;
 }
