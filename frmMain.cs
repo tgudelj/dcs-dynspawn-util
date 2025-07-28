@@ -302,16 +302,20 @@ public partial class frmMain : Form {
         foreach (KeyValuePair<object, object> item in airportsTable) {
             LuaTable airport = item.Value as LuaTable;
             airport["allowHotStart"] = true;
-            LuaTable helicopters = GetTableByPath(["aircrafts", "helicopters"], airportsTable, true);
-            foreach (string type in helicopters.Keys.Cast<string>()) {
-                if (TypeTemplateGroupMap.ContainsKey(type)) {
-                    (helicopters[type] as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[type];
+            LuaTable helicopters = GetTableByPath(["aircrafts", "helicopters"], airport, true);
+            foreach (KeyValuePair<object, object> aircraft in helicopters) {
+                if (TypeTemplateGroupMap.ContainsKey(aircraft.Key as string)) {
+                    (aircraft.Value as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[aircraft.Key.ToString()];
+                } else {
+                    (aircraft.Value as LuaTable)["linkDynTempl"] = 0;
                 }
             }
-            LuaTable planes = GetTableByPath(["aircrafts", "planes"], airportsTable, true);
-            foreach (string type in planes.Keys.Cast<string>()) {
-                if (TypeTemplateGroupMap.ContainsKey(type)) {
-                    (helicopters[type] as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[type];
+            LuaTable planes = GetTableByPath(["aircrafts", "planes"], airport, true);
+            foreach (KeyValuePair<object, object> aircraft in planes) {
+                if (TypeTemplateGroupMap.ContainsKey(aircraft.Key as string)) {
+                    (aircraft.Value as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[aircraft.Key.ToString()];
+                } else {
+                    (aircraft.Value as LuaTable)["linkDynTempl"] = 0;
                 }
             }
         }
@@ -330,7 +334,7 @@ public partial class frmMain : Form {
                 writer.Write(mission);
             }
             using (StreamWriter writer = new StreamWriter(warehousesLuaFile.Open())) {
-                //writer.Write(warehouses);
+                writer.Write(warehouses);
             }
         }
         MessageBox.Show("Done");
