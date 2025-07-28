@@ -18,10 +18,29 @@ namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
 
     AppSettings settings;
-    List<DCSTemplateGroupInfo> mizGroups = new List<DCSTemplateGroupInfo>();
+    List<DCSTemplateGroupInfo> GroupsInMission = new List<DCSTemplateGroupInfo>();
     LuaTable mizTable = null;
+    internal BindingList<DCSTemplateGroupInfo> _groups = new BindingList<DCSTemplateGroupInfo>();
+    internal BindingList<DCSNameTypeItem> _typesList = new BindingList<DCSNameTypeItem>();
+
+    DCSTemplateGroupInfo SelectedTemplatGroup = null;
+    List<DCSNameTypeItem> SelectedapplyToTypes = new List<DCSNameTypeItem>();
+
     public frmMain() {
         InitializeComponent();
+    }
+
+    #region Event handlers
+    private void frmMain_Load(object sender, EventArgs e) {
+        settings = Program.Configuration.GetSection("Settings").Get<AppSettings>();
+        foreach (DCSNameTypeItem item in settings.Flyable) {
+            _typesList.Add(item);
+        }
+        lbApplyTo.DataSource = _typesList;
+        lbApplyTo.DisplayMember = "DisplayName";
+
+        lbMizGroups.DataSource = _groups;
+        lbMizGroups.DisplayMember = "DisplayName";
     }
 
     private void miOpenMission_Click(object sender, EventArgs e) {
@@ -35,15 +54,91 @@ public partial class frmMain : Form {
         string bakcup = original.FullName + DateTime.Now.ToString("_yyyy-MM-dd-HH-mm-ss") + ".bak";
         File.Copy(original.FullName, bakcup);
         //Clear list box
-        lbMizGroups.DataBindings.Clear();
-        lbMizGroups.DataSource = null;
-        lbMizGroups.Items.Clear();
-        mizGroups.Clear();
+        _groups.Clear();
+        GroupsInMission.Clear();
         //Load groups and bind list box
         LoadGroupsFromMission(fileName);
-        lbMizGroups.DataSource = mizGroups;
-        lbMizGroups.DisplayMember = "DisplayName";
     }
+
+    private void btnCancel_Click(object sender, EventArgs e) {
+        Application.Exit();
+    }
+
+    private void btnSelectAll_Click(object sender, EventArgs e) {
+        for (int i = 0; i < lbApplyTo.Items.Count; i++) {
+            lbApplyTo.SetSelected(i, true);
+        }
+    }
+
+    private void btnClear_Click(object sender, EventArgs e) {
+        lbApplyTo.SelectedIndex = -1;
+    }
+
+    private void btnClearGroupsFilter_Click(object sender, EventArgs e) {
+        txtGroupsFilter.Text = "";
+        _groups.Clear();
+        foreach (DCSTemplateGroupInfo g in GroupsInMission) {
+            _groups.Add(g);
+        }
+    }
+
+    private void btnClearApplyToFilter_Click(object sender, EventArgs e) {
+        txtApplyToFilter.Text = "";
+        _typesList.Clear();
+        foreach (DCSNameTypeItem item in settings.Flyable) { 
+            _typesList.Add(item);
+        }
+    }
+
+    private void txtGroupsFilter_KeyUp(object sender, KeyEventArgs e) {
+        string searchString = txtGroupsFilter.Text;
+        _groups.Clear();
+        if (searchString.Length < 2) {
+            foreach (DCSTemplateGroupInfo group in GroupsInMission) {
+                _groups.Add(group);
+            }
+            return; 
+        }
+        foreach (DCSTemplateGroupInfo g in GroupsInMission) {
+            if (g.GroupName.Contains(searchString) || g.DCSVehicleType.Contains(searchString)) {
+                _groups.Add(g);
+            }
+        }
+    }
+
+    private void txtApplyToFilter_KeyUp(object sender, KeyEventArgs e) {
+        string searchString = txtApplyToFilter.Text;
+        _typesList.Clear();
+        if (searchString.Length < 2) {
+            foreach (DCSNameTypeItem item in settings.Flyable) {
+                _typesList.Add(item);
+            }
+            return; 
+        }
+        foreach (DCSNameTypeItem t in settings.Flyable) {
+            if (t.DisplayName.Contains(searchString)) {
+                _typesList.Add(t);
+            }
+        }
+    }
+
+    private void lbMizGroups_SelectedIndexChanged(object sender, EventArgs e) {
+        if (lbMizGroups.SelectedItems.Count == 0) {
+            return;
+        }
+        DCSTemplateGroupInfo selectedGroup = lbMizGroups.SelectedItem as DCSTemplateGroupInfo;
+        lblSelectedGroupInfo.Text = $"Name: {selectedGroup.GroupName}\nType: {selectedGroup.DCSVehicleType}\nGroupId {selectedGroup.GroupId}";
+    }
+
+    private void lbApplyTo_SelectedIndexChanged(object sender, EventArgs e) {
+        List<DCSNameTypeItem> selectedItems = new List<DCSNameTypeItem>();
+        foreach (int i in lbApplyTo.SelectedIndices) {
+            selectedItems.Add(lbApplyTo.Items[i] as DCSNameTypeItem);
+        }
+    }
+    #endregion
+
+
 
     private void LoadGroupsFromMission(string filename) {
         Lua lua = new Lua();
@@ -89,7 +184,7 @@ public partial class frmMain : Form {
                                         groupInfo.DCSVehicleType = firstUnit["type"] as string;
                                         groupInfo.Coalition = coalitionKey;
                                         groupInfo.Country = countryIndex;
-                                        mizGroups.Add(groupInfo);
+                                        GroupsInMission.Add(groupInfo);
                                     }
                                 }
                             }
@@ -97,6 +192,10 @@ public partial class frmMain : Form {
                     }
                 }
             }
+        }
+        _groups.Clear();
+        foreach (DCSTemplateGroupInfo group in GroupsInMission) { 
+            _groups.Add(group);
         }
     }
 
@@ -122,29 +221,10 @@ public partial class frmMain : Form {
         return currentTable;
     }
 
-    private void frmMain_Load(object sender, EventArgs e) {
-        settings = Program.Configuration.GetSection("Settings").Get<AppSettings>();
-        lbApplyTo.DataSource = settings.Flyable;
-        lbApplyTo.DisplayMember = "DisplayName";
-    }
-
-    private void btnCancel_Click(object sender, EventArgs e) {
-        Application.Exit();
-    }
-
-    private void btnSelectAll_Click(object sender, EventArgs e) {
-        for (int i = 0; i < lbApplyTo.Items.Count; i++) {
-            lbApplyTo.SetSelected(i, true);
-        }
-    }
-
-    private void btnClear_Click(object sender, EventArgs e) {
-        lbApplyTo.SelectedIndex = -1;
-    }
 
     private void btnApply_Click(object sender, EventArgs e) {
         //Add required groups to mission, set ["dynSpawnTemplate"] = true to added groups and remember their groupIds
-        string ser = Serialize(mizGroups[0].GroupTable);
+        string ser = Serialize(GroupsInMission[0].GroupTable);
 
         //Add ["linkDynTempl"] = groupId to each warehouse
     }
@@ -187,20 +267,5 @@ public partial class frmMain : Form {
         var serializeFunc = lua["serialize"] as LuaFunction;
         var res = (string)serializeFunc.Call(table).First();
         return res;
-    }
-
-    private void lbMizGroups_SelectedIndexChanged(object sender, EventArgs e) {
-        if (lbMizGroups.SelectedItems.Count == 0) {
-            return;
-        }
-        DCSTemplateGroupInfo selectedGroup = lbMizGroups.SelectedItem as DCSTemplateGroupInfo;
-        lblSelectedGroupInfo.Text = $"Name: {selectedGroup.GroupName}\nType: {selectedGroup.DCSVehicleType}\nGroupId {selectedGroup.GroupId}";
-    }
-
-    private void lbApplyTo_SelectedIndexChanged(object sender, EventArgs e) {
-        List< DCSNameTypeItem> selectedItems = new List< DCSNameTypeItem>();
-        foreach (int i in lbApplyTo.SelectedIndices) {
-            selectedItems.Add(lbApplyTo.Items[i] as DCSNameTypeItem);
-        }
     }
 }

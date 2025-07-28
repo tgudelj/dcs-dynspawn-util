@@ -37,6 +37,10 @@ partial class frmMain {
         btnSelectAll = new Button();
         btnClear = new Button();
         lblSelectedGroupInfo = new Label();
+        txtGroupsFilter = new TextBox();
+        btnClearGroupsFilter = new Button();
+        txtApplyToFilter = new TextBox();
+        btnClearApplyToFilter = new Button();
         menuMain.SuspendLayout();
         SuspendLayout();
         // 
@@ -72,9 +76,9 @@ partial class frmMain {
         lbMizGroups.Font = new Font("Segoe UI", 10F);
         lbMizGroups.FormattingEnabled = true;
         lbMizGroups.ItemHeight = 17;
-        lbMizGroups.Location = new Point(19, 57);
+        lbMizGroups.Location = new Point(19, 121);
         lbMizGroups.Name = "lbMizGroups";
-        lbMizGroups.Size = new Size(567, 395);
+        lbMizGroups.Size = new Size(567, 344);
         lbMizGroups.Sorted = true;
         lbMizGroups.TabIndex = 1;
         lbMizGroups.SelectedIndexChanged += lbMizGroups_SelectedIndexChanged;
@@ -93,10 +97,10 @@ partial class frmMain {
         lbApplyTo.Font = new Font("Segoe UI", 10F);
         lbApplyTo.FormattingEnabled = true;
         lbApplyTo.ItemHeight = 17;
-        lbApplyTo.Location = new Point(683, 78);
+        lbApplyTo.Location = new Point(683, 121);
         lbApplyTo.Name = "lbApplyTo";
         lbApplyTo.SelectionMode = SelectionMode.MultiExtended;
-        lbApplyTo.Size = new Size(282, 378);
+        lbApplyTo.Size = new Size(282, 344);
         lbApplyTo.Sorted = true;
         lbApplyTo.TabIndex = 4;
         lbApplyTo.SelectedIndexChanged += lbApplyTo_SelectedIndexChanged;
@@ -113,7 +117,7 @@ partial class frmMain {
         // btnCancel
         // 
         btnCancel.Font = new Font("Segoe UI", 10F);
-        btnCancel.Location = new Point(761, 481);
+        btnCancel.Location = new Point(761, 500);
         btnCancel.Name = "btnCancel";
         btnCancel.Size = new Size(95, 33);
         btnCancel.TabIndex = 5;
@@ -124,7 +128,7 @@ partial class frmMain {
         // btnApply
         // 
         btnApply.Font = new Font("Segoe UI", 10F);
-        btnApply.Location = new Point(862, 481);
+        btnApply.Location = new Point(862, 500);
         btnApply.Name = "btnApply";
         btnApply.Size = new Size(103, 33);
         btnApply.TabIndex = 6;
@@ -160,11 +164,51 @@ partial class frmMain {
         lblSelectedGroupInfo.Size = new Size(567, 65);
         lblSelectedGroupInfo.TabIndex = 9;
         // 
+        // txtGroupsFilter
+        // 
+        txtGroupsFilter.Location = new Point(19, 91);
+        txtGroupsFilter.Name = "txtGroupsFilter";
+        txtGroupsFilter.Size = new Size(528, 23);
+        txtGroupsFilter.TabIndex = 10;
+        txtGroupsFilter.KeyUp += txtGroupsFilter_KeyUp;
+        // 
+        // btnClearGroupsFilter
+        // 
+        btnClearGroupsFilter.Location = new Point(554, 91);
+        btnClearGroupsFilter.Name = "btnClearGroupsFilter";
+        btnClearGroupsFilter.Size = new Size(32, 23);
+        btnClearGroupsFilter.TabIndex = 11;
+        btnClearGroupsFilter.Text = "X";
+        btnClearGroupsFilter.UseVisualStyleBackColor = true;
+        btnClearGroupsFilter.Click += btnClearGroupsFilter_Click;
+        // 
+        // txtApplyToFilter
+        // 
+        txtApplyToFilter.Location = new Point(683, 91);
+        txtApplyToFilter.Name = "txtApplyToFilter";
+        txtApplyToFilter.Size = new Size(243, 23);
+        txtApplyToFilter.TabIndex = 12;
+        txtApplyToFilter.KeyUp += txtApplyToFilter_KeyUp;
+        // 
+        // btnClearApplyToFilter
+        // 
+        btnClearApplyToFilter.Location = new Point(932, 91);
+        btnClearApplyToFilter.Name = "btnClearApplyToFilter";
+        btnClearApplyToFilter.Size = new Size(32, 23);
+        btnClearApplyToFilter.TabIndex = 13;
+        btnClearApplyToFilter.Text = "X";
+        btnClearApplyToFilter.UseVisualStyleBackColor = true;
+        btnClearApplyToFilter.Click += btnClearApplyToFilter_Click;
+        // 
         // frmMain
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(977, 545);
+        Controls.Add(btnClearApplyToFilter);
+        Controls.Add(txtApplyToFilter);
+        Controls.Add(btnClearGroupsFilter);
+        Controls.Add(txtGroupsFilter);
         Controls.Add(lblSelectedGroupInfo);
         Controls.Add(btnClear);
         Controls.Add(btnSelectAll);
@@ -200,4 +244,8 @@ partial class frmMain {
     private Button btnSelectAll;
     private Button btnClear;
     private Label lblSelectedGroupInfo;
+    private TextBox txtGroupsFilter;
+    private Button btnClearGroupsFilter;
+    private TextBox txtApplyToFilter;
+    private Button btnClearApplyToFilter;
 }
