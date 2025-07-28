@@ -23,8 +23,8 @@ public partial class frmMain : Form {
     internal BindingList<DCSTemplateGroupInfo> _groups = new BindingList<DCSTemplateGroupInfo>();
     internal BindingList<DCSNameTypeItem> _typesList = new BindingList<DCSNameTypeItem>();
     DCSTemplateGroupInfo SelectedTemplatGroup = null;
-    int MaxGroupId = 1; //Maximum group id found in mission
-    int MaxUnitId = 1; //Maximum unit id found in mission
+    long MaxGroupId = 1; //Maximum group id found in mission
+    long MaxUnitId = 1; //Maximum unit id found in mission
 
     public frmMain() {
         InitializeComponent();
@@ -137,12 +137,12 @@ public partial class frmMain : Form {
         _groups.Clear();
         GroupsInMission.Clear();
         //Load groups and bind list box
-        LoadGroupsFromMission(fileName);
+        LoadMission(fileName);
     }
 
     #endregion
 
-    private void LoadGroupsFromMission(string filename) {
+    private void LoadMission(string filename) {
         using (ZipArchive archive = ZipFile.Open(filename, ZipArchiveMode.Update)) {
             ZipArchiveEntry missionLuaFile = archive.GetEntry("mission");
             using (StreamReader sr = new StreamReader(missionLuaFile.Open())) {
@@ -166,12 +166,11 @@ public partial class frmMain : Form {
                                 for (int groupIndex = 1; groupIndex <= groupsTable.Keys.Count; groupIndex++) {
                                     //Inspect group
                                     LuaTable group = groupsTable[groupIndex] as LuaTable;
-                                    //FindForm the max index in groups table, we might need it later to insert new template groups
-                                    int maxIndex = 1;
-                                    foreach (var index in groupsTable.Keys.Cast<long>()) {
-                                        if (index > maxIndex) {
-                                            maxIndex = (int)index;
-                                        }
+                                    long groupId = (long)group["groupId"];
+                                    //We need the highest groupId so we know where to start when inserting new groups
+                                    Debug.WriteLine($"groupId: {groupId} Max: {MaxGroupId}");
+                                    if (groupId > MaxGroupId) { 
+                                        MaxGroupId = groupId;
                                     }
                                     if (group.Keys.Cast<string>().Contains("dynSpawnTemplate")) {
                                         LuaTable unitsTable = group["units"] as LuaTable;
@@ -180,11 +179,20 @@ public partial class frmMain : Form {
                                         groupInfo.GroupId = (long)group["groupId"];
                                         groupInfo.GroupName = group["name"] as string;
                                         groupInfo.GroupTable = group;
-                                        groupInfo.MAXIndexInCategory = maxIndex;
                                         groupInfo.DCSVehicleType = firstUnit["type"] as string;
                                         groupInfo.Coalition = coalitionKey;
                                         groupInfo.Country = countryIndex;
                                         GroupsInMission.Add(groupInfo);
+                                        //iterate units because we must find the highest unitId so we know where to start when inserting new ones
+                                        //index based
+                                        for (int unitIndex = 1; unitIndex <= unitsTable.Keys.Count; unitIndex++) {
+                                            LuaTable unitTable = unitsTable[unitIndex] as LuaTable;
+                                            long unitId = (long)unitTable["unitId"];
+                                            Debug.WriteLine($"unitId: {unitId} Max: {MaxUnitId}");
+                                            if (unitId > MaxUnitId) { 
+                                                MaxUnitId = unitId;
+                                            }
+                                        }
                                     }
                                 }
                             }
