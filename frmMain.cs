@@ -1,25 +1,21 @@
 ﻿using Microsoft.Extensions.Configuration;
 using NLua;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
+using System.Globalization;
 using System.IO.Compression;
-using System.Linq;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
+using System.Reflection.Metadata;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
     Lua lua = new Lua();    
     AppSettings settings;
+    string MissionFilePath = null;
     List<DCSTemplateGroupInfo> GroupsInMission = new List<DCSTemplateGroupInfo>();
     LuaTable MissionTable = null;
+    LuaTable WarehousesTable = null;
     internal BindingList<DCSTemplateGroupInfo> _groups = new BindingList<DCSTemplateGroupInfo>();
     internal BindingList<DCSTypeInfo> _typesList = new BindingList<DCSTypeInfo>();
     DCSTemplateGroupInfo SelectedTemplatGroup = null;
@@ -33,6 +29,13 @@ public partial class frmMain : Form {
     #region ------------- Event handlers -------------
 
     private void frmMain_Load(object sender, EventArgs e) {
+        string CultureName = Thread.CurrentThread.CurrentCulture.Name;
+        CultureInfo ci = new CultureInfo(CultureName);
+        if (ci.NumberFormat.NumberDecimalSeparator != ".") {
+            // Forcing use of decimal separator for numerical values
+            ci.NumberFormat.NumberDecimalSeparator = ".";
+            Thread.CurrentThread.CurrentCulture = ci;
+        }
         lua.State.Encoding = Encoding.UTF8;
         settings = Program.Configuration.GetSection("Settings").Get<AppSettings>();
         foreach (DCSTypeInfo item in settings.Flyable) {
@@ -138,14 +141,23 @@ public partial class frmMain : Form {
         _groups.Clear();
         GroupsInMission.Clear();
         //Load groups and bind list box
-        LoadMission(fileName);
+        MissionFilePath = fileName;
+        LoadMizFile(fileName);
     }
 
     #endregion
 
-    private void LoadMission(string filename) {
+    private void LoadMizFile(string filename) {
         using (ZipArchive archive = ZipFile.Open(filename, ZipArchiveMode.Update)) {
             ZipArchiveEntry missionLuaFile = archive.GetEntry("mission");
+            ZipArchiveEntry warehouseLuaFile = archive.GetEntry("warehouses");
+            //Get warehouses
+            using (StreamReader sr = new StreamReader(warehouseLuaFile.Open())) { 
+                string warehousesLua = sr.ReadToEnd();
+                var warehouses = lua.DoString(warehousesLua + Environment.NewLine + "return warehouses");
+                WarehousesTable = (LuaTable)warehouses[0];
+            }
+            //Get mission
             using (StreamReader sr = new StreamReader(missionLuaFile.Open())) {
                 string missionLua = sr.ReadToEnd();
                 var mission = lua.DoString(missionLua + Environment.NewLine + "return mission");
@@ -209,15 +221,17 @@ public partial class frmMain : Form {
         lbMizGroups.SelectedIndex = -1;
     }
 
-    private LuaTable GetTableByPath(object[] path, LuaTable table) {
+    private LuaTable GetTableByPath(object[] path, LuaTable table, bool createIfNecessary = true) {
         LuaTable currentTable = table;
         for (int i = 0; i < path.Length; i++) {
             object key = path[i];
             if (currentTable != null) {
                 if (!currentTable.Keys.Cast<object>().ToList().Contains(key)) {
-                    throw new KeyNotFoundException($"Key '{key}' not found in the table.");
-                } else {
-
+                    if (createIfNecessary) {
+                        currentTable[key] = DeserializeLuaTable("{}");
+                    } else {
+                        throw new KeyNotFoundException($"Key '{key}' not found in the table.");
+                    }
                 }
                 currentTable = currentTable[key] as LuaTable;
             } else {
@@ -240,6 +254,7 @@ public partial class frmMain : Form {
         //build a dictionary of dcs type to template group id, we will need it when modifying warehouse
         Dictionary<string, long> TypeTemplateGroupMap = new Dictionary<string, long>();
         //Add groups to mission
+        int i = 0;
         foreach (DCSTypeInfo typeItem in lbApplyTo.SelectedItems) {
             Debug.WriteLine($@"Creating dynamic template group for {typeItem.DisplayName} [{typeItem.DCSType}]");
             LuaTable clone = CloneLuaTable(SelectedTemplatGroup.GroupTable);
@@ -258,34 +273,103 @@ public partial class frmMain : Form {
             LuaTable payloadTable = firstUnit["payload"] as LuaTable;
             payloadTable["pylons"] = DeserializeLuaTable("{}");
             //? Fuel
-            //Now assemble the table backwards
-
-
-
             TypeTemplateGroupMap.Add(typeItem.DCSType, currentGroupId);
-            //we need to insert this new group into 
-            //coalition/red\blue|neutrals/country/[?]/plane|helicopter/group/
-            //LuaTable injectTable = GetTableByPath(["coalition", "neutrals", "country", 1L, typeItem.Category], MissionTable);
-            //LuaTable injectTable = GetTableByPath(["coalition", "neutrals", "country", 1L], MissionTable);
-            //if (!injectTable.Keys.Cast<string>().ToList().Contains(typeItem.Category)) {
-            //    //no entry for our category, we need to add it
-            //    injectTable[typeItem.Category] = DeserializeLuaTable("{}");                
-            //}
 
-            LuaTable injectTable = ((LuaTable)((LuaTable)((LuaTable)((LuaTable)MissionTable["coalition"])["neutrals"])["country"])[1]);
-            if (!injectTable.Keys.Cast<string>().ToList().Contains(typeItem.Category)) {
-                injectTable[typeItem.Category] = DeserializeLuaTable("{}");
-            }
+            double x = (double)firstUnit["x"];
+            double y = (double)firstUnit["y"];
+            x += i * 10;
+            y += i * 10;
+            firstUnit["x"] = x;
+            firstUnit["y"] = y;
 
-            int count = ((LuaTable)injectTable[typeItem.Category]).Keys.Count;
-            ((LuaTable)injectTable[typeItem.Category])[count + 1] = clone;
+            LuaTable firstPoint = GetTableByPath(["route", "points", 1L], clone);
+            firstPoint["x"] = x;
+            firstPoint["y"] = y;
 
+            LuaTable injectTable = GetTableByPath(["coalition", SelectedTemplatGroup.Coalition, "country", SelectedTemplatGroup.Country, typeItem.Category, "group"], MissionTable, true);
+            int count = injectTable.Keys.Count;
+            injectTable[count + 1] = clone;
+
+            i++;
             currentGroupId++;
             currentUnitId++;
         }
-        string s = SerializeLuaTable(MissionTable);
-        Debug.WriteLine(s);
-        //Add ["linkDynTempl"] = groupId to each warehouse
+        //now we have mission file content
+        string mission = "mission = " + SerializeLuaTebleEx(MissionTable);
+
+        //We need to add template group references to all airfields ["linkDynTempl"] = groupId of the template group
+        LuaTable airportsTable = WarehousesTable["airports"] as LuaTable;
+        foreach (KeyValuePair<object, object> item in airportsTable) {
+            LuaTable airport = item.Value as LuaTable;
+            airport["allowHotStart"] = true;
+            LuaTable helicopters = GetTableByPath(["aircrafts", "helicopters"], airportsTable, true);
+            foreach (string type in helicopters.Keys.Cast<string>()) {
+                if (TypeTemplateGroupMap.ContainsKey(type)) {
+                    (helicopters[type] as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[type];
+                }
+            }
+            LuaTable planes = GetTableByPath(["aircrafts", "planes"], airportsTable, true);
+            foreach (string type in planes.Keys.Cast<string>()) {
+                if (TypeTemplateGroupMap.ContainsKey(type)) {
+                    (helicopters[type] as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[type];
+                }
+            }
+        }
+        //now we have warehouses file content
+        string warehouses = "warehouses = " + SerializeLuaTebleEx(WarehousesTable);
+
+        //replace mission and warehouses files in .miz archive
+        using (ZipArchive archive = ZipFile.Open(MissionFilePath, ZipArchiveMode.Update)) {
+            ZipArchiveEntry missionLuaFile = archive.GetEntry("mission");
+            ZipArchiveEntry warehousesLuaFile = archive.GetEntry("warehouses");
+            missionLuaFile.Delete();
+            warehousesLuaFile.Delete();
+            missionLuaFile = archive.CreateEntry("mission");
+            warehousesLuaFile = archive.CreateEntry("warehouses");
+            using (StreamWriter writer = new StreamWriter(missionLuaFile.Open())) {
+                writer.Write(mission);
+            }
+            using (StreamWriter writer = new StreamWriter(warehousesLuaFile.Open())) {
+                writer.Write(warehouses);
+            }
+        }
+    }
+
+    //Waaay faster than Lua approach
+    private string SerializeLuaTebleEx(object obj, string ident = "") {
+        StringBuilder sb = new StringBuilder();
+        if (obj is string) {
+            string tmp = obj as string;
+            if (tmp.StartsWith("Inventory setup for")) {
+                Debug.WriteLine("here");
+            }
+            sb.AppendFormat("\"{0}\"",(obj as string).Replace(@"\", @"\\").Replace(@"'", @"\'").Replace(@"""", @"\""").Replace("\n", "\\\n"));
+        } else if (obj is long) {
+            sb.Append((long)obj);
+        } else if (obj is double) {
+            sb.Append((double)obj);
+        } else if (obj is bool) {
+            sb.Append(((bool)obj).ToString().ToLower());
+        } else if (obj is LuaTable) {
+            sb.Append("{\n");
+            foreach (KeyValuePair<object, object> item in obj as LuaTable) {
+                sb.Append(ident);
+                if (item.Key is string) {
+                    sb.AppendFormat("[\"{0}\"] = ", item.Key);
+                } else if (item.Key is long) {
+                    sb.AppendFormat("[{0}] = ", item.Key);
+                } else if (item.Key is double) {
+                    sb.AppendFormat("[{0}] = ", item.Key);
+                }
+                sb.Append(SerializeLuaTebleEx(item.Value, ident + "   "));
+                sb.Append(",\n");
+            }
+            sb.Append(ident);
+            sb.Append("}");
+        } else {
+            throw new Exception($"Can't serialize {obj.GetType()}");
+        }    
+        return sb.ToString();
     }
 
     private string SerializeLuaTable(LuaTable table) {
@@ -346,19 +430,6 @@ function ___serializeTable(tbl)
                             end");
         var func = lua["___returnTable"] as LuaFunction;
         LuaTable newTable = func.Call().First() as LuaTable;
-        return newTable;
-    }
-
-    private LuaTable AddToIndexTable(LuaTable table, LuaTable tableToInsert) {
-        string luaString = @"
-        function ___addToTable(table1, table2)
-            table.insert(table, tableToInsert)
-            return table1
-        end
-        ";
-        lua.DoString(luaString);
-        var func = lua["___addToTable"] as LuaFunction;
-        LuaTable newTable = func.Call(table, tableToInsert).First() as LuaTable;
         return newTable;
     }
 }
