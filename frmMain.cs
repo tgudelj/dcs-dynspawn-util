@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
-    Lua lua = new Lua();    
+    Lua lua;    
     AppSettings settings;
     string MissionFilePath = null;
     List<DCSTemplateGroupInfo> GroupsInMission = new List<DCSTemplateGroupInfo>();
@@ -36,7 +36,6 @@ public partial class frmMain : Form {
             ci.NumberFormat.NumberDecimalSeparator = ".";
             Thread.CurrentThread.CurrentCulture = ci;
         }
-        lua.State.Encoding = Encoding.UTF8;
         settings = Program.Configuration.GetSection("Settings").Get<AppSettings>();
         foreach (DCSTypeInfo item in settings.Flyable) {
             _typesList.Add(item);
@@ -47,10 +46,6 @@ public partial class frmMain : Form {
 
         lbMizGroups.DataSource = _groups;
         lbMizGroups.DisplayMember = "DisplayName";
-    }
-
-    private void btnCancel_Click(object sender, EventArgs e) {
-        Application.Exit();
     }
 
     private void btnSelectAll_Click(object sender, EventArgs e) {
@@ -89,7 +84,7 @@ public partial class frmMain : Form {
             return; 
         }
         foreach (DCSTemplateGroupInfo g in GroupsInMission) {
-            if (g.GroupName.Contains(searchString) || g.DCSVehicleType.Contains(searchString)) {
+            if (g.GroupName.ToLower().Contains(searchString.ToLower()) || g.DCSVehicleType.ToLower().Contains(searchString.ToLower())) {
                 _groups.Add(g);
             }
         }
@@ -105,7 +100,7 @@ public partial class frmMain : Form {
             return; 
         }
         foreach (DCSTypeInfo t in settings.Flyable) {
-            if (t.DisplayName.Contains(searchString)) {
+            if (t.DisplayName.ToLower().Contains(searchString.ToLower())) {
                 _typesList.Add(t);
             }
         }
@@ -148,6 +143,17 @@ public partial class frmMain : Form {
     #endregion
 
     private void LoadMizFile(string filename) {
+        lua = new Lua();
+        lua.State.Encoding = Encoding.UTF8;
+        MissionTable = null;
+        WarehousesTable = null;
+        SelectedTemplatGroup = null;
+        GroupsInMission.Clear();
+        _groups.Clear();
+        lbApplyTo.SelectedIndex = -1;
+        lbMizGroups.SelectedIndex = -1;
+        MaxGroupId = 1;
+        MaxUnitId = 1;
         using (ZipArchive archive = ZipFile.Open(filename, ZipArchiveMode.Update)) {
             ZipArchiveEntry missionLuaFile = archive.GetEntry("mission");
             ZipArchiveEntry warehouseLuaFile = archive.GetEntry("warehouses");
@@ -214,11 +220,9 @@ public partial class frmMain : Form {
                 }
             }
         }
-        _groups.Clear();
         foreach (DCSTemplateGroupInfo group in GroupsInMission) { 
             _groups.Add(group);
         }
-        lbMizGroups.SelectedIndex = -1;
     }
 
     private LuaTable GetTableByPath(object[] path, LuaTable table, bool createIfNecessary = true) {
@@ -310,12 +314,7 @@ public partial class frmMain : Form {
                     //it seems there is a bug in DCS, if initialAmount is 0, dynamic templates won't work in multiplayer
                     //During the mission amounts can change but there has to be at lest one item initially
                     (aircraft.Value as LuaTable)["initialAmount"] = 1L;
-                } else {
-                    (aircraft.Value as LuaTable)["linkDynTempl"] = 0;
                 }
-
-
-
             }
             LuaTable planes = GetTableByPath(["aircrafts", "planes"], airport, true);
             foreach (KeyValuePair<object, object> aircraft in planes) {
@@ -324,8 +323,6 @@ public partial class frmMain : Form {
                     //it seems there is a bug in DCS, if initialAmount is 0, dynamic templates won't work in multiplayer
                     //During the mission amounts can change but there has to be at lest one item initially
                     (aircraft.Value as LuaTable)["initialAmount"] = 1L;
-                } else {
-                    (aircraft.Value as LuaTable)["linkDynTempl"] = 0;
                 }
             }
         }
@@ -348,6 +345,7 @@ public partial class frmMain : Form {
             }
         }
         MessageBox.Show("Done");
+        LoadMizFile(MissionFilePath);
     }
 
     //Waaay faster than Lua approach
