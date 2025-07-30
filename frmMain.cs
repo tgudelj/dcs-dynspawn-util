@@ -307,14 +307,23 @@ public partial class frmMain : Form {
             foreach (KeyValuePair<object, object> aircraft in helicopters) {
                 if (TypeTemplateGroupMap.ContainsKey(aircraft.Key as string)) {
                     (aircraft.Value as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[aircraft.Key.ToString()];
+                    //it seems there is a bug in DCS, if initialAmount is 0, dynamic templates won't work in multiplayer
+                    //During the mission amounts can change but there has to be at lest one item initially
+                    (aircraft.Value as LuaTable)["initialAmount"] = 1L;
                 } else {
                     (aircraft.Value as LuaTable)["linkDynTempl"] = 0;
                 }
+
+
+
             }
             LuaTable planes = GetTableByPath(["aircrafts", "planes"], airport, true);
             foreach (KeyValuePair<object, object> aircraft in planes) {
                 if (TypeTemplateGroupMap.ContainsKey(aircraft.Key as string)) {
                     (aircraft.Value as LuaTable)["linkDynTempl"] = TypeTemplateGroupMap[aircraft.Key.ToString()];
+                    //it seems there is a bug in DCS, if initialAmount is 0, dynamic templates won't work in multiplayer
+                    //During the mission amounts can change but there has to be at lest one item initially
+                    (aircraft.Value as LuaTable)["initialAmount"] = 1L;
                 } else {
                     (aircraft.Value as LuaTable)["linkDynTempl"] = 0;
                 }
