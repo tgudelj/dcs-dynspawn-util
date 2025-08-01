@@ -7,10 +7,11 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Windows.Forms;
 
 namespace DCSDynamicTemplateHelper;
 public partial class frmMain : Form {
-    Lua lua;    
+    Lua lua;
     AppSettings settings;
     string MissionFilePath = null;
     List<DCSTemplateGroupInfo> GroupsInMission = new List<DCSTemplateGroupInfo>();
@@ -21,6 +22,7 @@ public partial class frmMain : Form {
     DCSTemplateGroupInfo SelectedTemplatGroup = null;
     long MaxGroupId = 1; //Maximum group id found in mission
     long MaxUnitId = 1; //Maximum unit id found in mission
+    private int _previousSelectedIndex = -1;
 
     public frmMain() {
         InitializeComponent();
@@ -69,7 +71,7 @@ public partial class frmMain : Form {
     private void btnClearApplyToFilter_Click(object sender, EventArgs e) {
         txtApplyToFilter.Text = "";
         _typesList.Clear();
-        foreach (DCSTypeInfo item in settings.Flyable) { 
+        foreach (DCSTypeInfo item in settings.Flyable) {
             _typesList.Add(item);
         }
     }
@@ -81,7 +83,7 @@ public partial class frmMain : Form {
             foreach (DCSTemplateGroupInfo group in GroupsInMission) {
                 _groups.Add(group);
             }
-            return; 
+            return;
         }
         foreach (DCSTemplateGroupInfo g in GroupsInMission) {
             if (g.GroupName.ToLower().Contains(searchString.ToLower()) || g.DCSVehicleType.ToLower().Contains(searchString.ToLower())) {
@@ -97,7 +99,7 @@ public partial class frmMain : Form {
             foreach (DCSTypeInfo item in settings.Flyable) {
                 _typesList.Add(item);
             }
-            return; 
+            return;
         }
         foreach (DCSTypeInfo t in settings.Flyable) {
             if (t.DisplayName.ToLower().Contains(searchString.ToLower())) {
@@ -111,8 +113,18 @@ public partial class frmMain : Form {
             SelectedTemplatGroup = null;
             return;
         }
+
+        //Redraw previously selected item to prevent graphical glitch (item stays white on white background)
+        if ( _previousSelectedIndex >= 0) {
+            var rect = lbMizGroups.GetItemRectangle(_previousSelectedIndex);
+            lbMizGroups.Invalidate(rect);
+        } else {
+            lbMizGroups.Invalidate();
+        }
+
+            _previousSelectedIndex = lbMizGroups.SelectedIndex;
         SelectedTemplatGroup = lbMizGroups.SelectedItem as DCSTemplateGroupInfo;
-        lblSelectedGroupInfo.Text = $"Name: {SelectedTemplatGroup.GroupName}\nType: {SelectedTemplatGroup.DCSVehicleType}\nGroupId {SelectedTemplatGroup.GroupId}";
+        lblSelectedGroupInfo.Text = $"Name: [{SelectedTemplatGroup.Coalition.ToUpper()}] {SelectedTemplatGroup.GroupName}\nType: {SelectedTemplatGroup.DCSVehicleType}\nGroupId {SelectedTemplatGroup.GroupId}";
     }
 
     private void lbApplyTo_SelectedIndexChanged(object sender, EventArgs e) {
@@ -158,7 +170,7 @@ public partial class frmMain : Form {
             ZipArchiveEntry missionLuaFile = archive.GetEntry("mission");
             ZipArchiveEntry warehouseLuaFile = archive.GetEntry("warehouses");
             //Get warehouses
-            using (StreamReader sr = new StreamReader(warehouseLuaFile.Open())) { 
+            using (StreamReader sr = new StreamReader(warehouseLuaFile.Open())) {
                 string warehousesLua = sr.ReadToEnd();
                 var warehouses = lua.DoString(warehousesLua + Environment.NewLine + "return warehouses");
                 WarehousesTable = (LuaTable)warehouses[0];
@@ -188,7 +200,7 @@ public partial class frmMain : Form {
                                     long groupId = (long)group["groupId"];
                                     //We need the highest groupId so we know where to start when inserting new groups
                                     Debug.WriteLine($"groupId: {groupId} Max: {MaxGroupId}");
-                                    if (groupId > MaxGroupId) { 
+                                    if (groupId > MaxGroupId) {
                                         MaxGroupId = groupId;
                                     }
                                     if (group.Keys.Cast<string>().Contains("dynSpawnTemplate")) {
@@ -208,7 +220,7 @@ public partial class frmMain : Form {
                                             LuaTable unitTable = unitsTable[unitIndex] as LuaTable;
                                             long unitId = (long)unitTable["unitId"];
                                             Debug.WriteLine($"unitId: {unitId} Max: {MaxUnitId}");
-                                            if (unitId > MaxUnitId) { 
+                                            if (unitId > MaxUnitId) {
                                                 MaxUnitId = unitId;
                                             }
                                         }
@@ -220,7 +232,7 @@ public partial class frmMain : Form {
                 }
             }
         }
-        foreach (DCSTemplateGroupInfo group in GroupsInMission) { 
+        foreach (DCSTemplateGroupInfo group in GroupsInMission) {
             _groups.Add(group);
         }
     }
@@ -358,7 +370,7 @@ public partial class frmMain : Form {
             if (tmp.StartsWith("Inventory setup for")) {
                 Debug.WriteLine("here");
             }
-            sb.AppendFormat("\"{0}\"",(obj as string).Replace(@"\", @"\\").Replace(@"'", @"\'").Replace(@"""", @"\""").Replace("\n", "\\\n"));
+            sb.AppendFormat("\"{0}\"", (obj as string).Replace(@"\", @"\\").Replace(@"'", @"\'").Replace(@"""", @"\""").Replace("\n", "\\\n"));
         } else if (obj is long) {
             sb.Append((long)obj);
         } else if (obj is double) {
@@ -383,7 +395,7 @@ public partial class frmMain : Form {
             sb.Append("}");
         } else {
             throw new Exception($"Can't serialize {obj.GetType()}");
-        }    
+        }
         return sb.ToString();
     }
 
@@ -429,7 +441,7 @@ function ___serializeTable(tbl)
         return res;
     }
 
-    private LuaTable CloneLuaTable(LuaTable table) { 
+    private LuaTable CloneLuaTable(LuaTable table) {
         string serialized = SerializeLuaTable(table);
         lua.DoString($@"function ___returnTable() 
                                 return {serialized}
@@ -446,5 +458,36 @@ function ___serializeTable(tbl)
         var func = lua["___returnTable"] as LuaFunction;
         LuaTable newTable = func.Call().First() as LuaTable;
         return newTable;
+    }
+
+    private void lbMizGroups_DrawItem(object sender, DrawItemEventArgs e) {
+        if (e.Index < 0) { return; }
+        DCSTemplateGroupInfo item = lbMizGroups.Items[e.Index] as DCSTemplateGroupInfo;
+        Color itemColor = Color.Black;
+        if (item != null) {
+            switch (item.Coalition.ToLower()) {
+                case "red":
+                    itemColor = Color.Red;
+                    break;
+                case "blue":
+                    itemColor = Color.Blue;
+                    break;
+            }
+        }
+        if (e.Index == lbMizGroups.SelectedIndex) { 
+            itemColor = Color.White;
+        }
+        e.DrawBackground();
+        // Draw text
+        using (Brush brush = new SolidBrush(itemColor)) {
+            e.Graphics.DrawString(
+                lbMizGroups.GetItemText(item),
+                e.Font,
+                brush,
+                e.Bounds
+            );
+        }
+
+        e.DrawFocusRectangle();
     }
 }

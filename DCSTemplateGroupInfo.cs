@@ -23,7 +23,7 @@ internal class DCSTemplateGroupInfo {
 
     public string DisplayName {
         get{
-        return $"[{Coalition}] {this.DCSVehicleType} {this.GroupName} [{this.GroupId}]";
+        return $"{this.DCSVehicleType} {this.GroupName} [{this.GroupId}]";
         }
     }
 }

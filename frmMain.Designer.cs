@@ -73,6 +73,7 @@ partial class frmMain {
         // 
         // lbMizGroups
         // 
+        lbMizGroups.DrawMode = DrawMode.OwnerDrawFixed;
         lbMizGroups.Font = new Font("Segoe UI", 10F);
         lbMizGroups.FormattingEnabled = true;
         lbMizGroups.ItemHeight = 17;
@@ -81,6 +82,7 @@ partial class frmMain {
         lbMizGroups.Size = new Size(567, 327);
         lbMizGroups.Sorted = true;
         lbMizGroups.TabIndex = 1;
+        lbMizGroups.DrawItem += lbMizGroups_DrawItem;
         lbMizGroups.SelectedIndexChanged += lbMizGroups_SelectedIndexChanged;
         // 
         // label1
