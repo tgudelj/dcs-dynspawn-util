@@ -45,9 +45,10 @@ public partial class frmMain : Form {
         lbApplyTo.DataSource = _typesList;
         lbApplyTo.DisplayMember = "DisplayName";
         lbApplyTo.SelectedIndex = -1;
-
+        
         lbMizGroups.DataSource = _groups;
         lbMizGroups.DisplayMember = "DisplayName";
+        lbMizGroups.SelectedIndex = -1;
     }
 
     private void btnSelectAll_Click(object sender, EventArgs e) {
@@ -199,7 +200,6 @@ public partial class frmMain : Form {
                                     LuaTable group = groupsTable[groupIndex] as LuaTable;
                                     long groupId = (long)group["groupId"];
                                     //We need the highest groupId so we know where to start when inserting new groups
-                                    Debug.WriteLine($"groupId: {groupId} Max: {MaxGroupId}");
                                     if (groupId > MaxGroupId) {
                                         MaxGroupId = groupId;
                                     }
@@ -219,7 +219,6 @@ public partial class frmMain : Form {
                                         for (int unitIndex = 1; unitIndex <= unitsTable.Keys.Count; unitIndex++) {
                                             LuaTable unitTable = unitsTable[unitIndex] as LuaTable;
                                             long unitId = (long)unitTable["unitId"];
-                                            Debug.WriteLine($"unitId: {unitId} Max: {MaxUnitId}");
                                             if (unitId > MaxUnitId) {
                                                 MaxUnitId = unitId;
                                             }
@@ -234,7 +233,7 @@ public partial class frmMain : Form {
         }
         foreach (DCSTemplateGroupInfo group in GroupsInMission) {
             _groups.Add(group);
-        }
+        }        
     }
 
     private LuaTable GetTableByPath(object[] path, LuaTable table, bool createIfNecessary = true) {
@@ -265,6 +264,7 @@ public partial class frmMain : Form {
         if (lbApplyTo.SelectedItems.Count == 0) {
             return;
         }
+        Cursor.Current = Cursors.WaitCursor;
         long currentGroupId = MaxGroupId + 1;
         long currentUnitId = MaxUnitId + 1;
         //build a dictionary of dcs type to template group id, we will need it when modifying warehouse
@@ -279,19 +279,19 @@ public partial class frmMain : Form {
             clone["name"] = groupPrefix;
             clone["groupId"] = currentGroupId;
             clone["tasks"] = DeserializeLuaTable("{}");
+            clone["frequency"] = null;
             clone["task"] = "Nothing";
             clone["password"] = "CNlep5nlE3T:-hqhgv26-mJfbDbHQSzA_JAMbjtquSy8UDhyoQC5J_c"; // we don't really care what the password is
             LuaTable unitsTable = clone["units"] as LuaTable;
             LuaTable firstUnit = unitsTable[1] as LuaTable;
             firstUnit["name"] = $"{groupPrefix}-1";
             firstUnit["unitId"] = currentUnitId;
-            firstUnit["frequency"] = typeItem.Frequency;
             firstUnit["type"] = typeItem.DCSType;
             firstUnit["skill"] = "Client";
-            //? Payload
+            firstUnit["Radio"] = DeserializeLuaTable("{}");
+            firstUnit["AddPropAircraft"] = DeserializeLuaTable("{}");
             LuaTable payloadTable = firstUnit["payload"] as LuaTable;
             payloadTable["pylons"] = DeserializeLuaTable("{}");
-            //? Fuel
             TypeTemplateGroupMap.Add(typeItem.DCSType, currentGroupId);
 
             double x = (double)firstUnit["x"];
@@ -358,7 +358,8 @@ public partial class frmMain : Form {
                 writer.Write(warehouses);
             }
         }
-        MessageBox.Show("Done");
+        Cursor.Current = Cursors.Default;
+        MessageBox.Show("Operation completed successfuly!", "Dynamic Spawn helper", MessageBoxButtons.OK, MessageBoxIcon.Information);
         LoadMizFile(MissionFilePath);
     }
 
@@ -367,9 +368,6 @@ public partial class frmMain : Form {
         StringBuilder sb = new StringBuilder();
         if (obj is string) {
             string tmp = obj as string;
-            if (tmp.StartsWith("Inventory setup for")) {
-                Debug.WriteLine("here");
-            }
             sb.AppendFormat("\"{0}\"", (obj as string).Replace(@"\", @"\\").Replace(@"'", @"\'").Replace(@"""", @"\""").Replace("\n", "\\\n"));
         } else if (obj is long) {
             sb.Append((long)obj);
