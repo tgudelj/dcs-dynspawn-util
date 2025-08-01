@@ -268,6 +268,7 @@ public partial class frmMain : Form {
             clone["groupId"] = currentGroupId;
             clone["tasks"] = DeserializeLuaTable("{}");
             clone["task"] = "Nothing";
+            clone["password"] = "CNlep5nlE3T:-hqhgv26-mJfbDbHQSzA_JAMbjtquSy8UDhyoQC5J_c"; // we don't really care what the password is
             LuaTable unitsTable = clone["units"] as LuaTable;
             LuaTable firstUnit = unitsTable[1] as LuaTable;
             firstUnit["name"] = $"{groupPrefix}-1";

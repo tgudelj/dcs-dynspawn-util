@@ -49,7 +49,7 @@ partial class frmMain {
         menuMain.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
         menuMain.Location = new Point(0, 0);
         menuMain.Name = "menuMain";
-        menuMain.Size = new Size(911, 25);
+        menuMain.Size = new Size(911, 24);
         menuMain.TabIndex = 0;
         menuMain.Text = "menuStrip1";
         // 
@@ -57,13 +57,13 @@ partial class frmMain {
         // 
         fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { miOpenMission });
         fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-        fileToolStripMenuItem.Size = new Size(39, 21);
+        fileToolStripMenuItem.Size = new Size(37, 20);
         fileToolStripMenuItem.Text = "File";
         // 
         // miOpenMission
         // 
         miOpenMission.Name = "miOpenMission";
-        miOpenMission.Size = new Size(185, 22);
+        miOpenMission.Size = new Size(172, 22);
         miOpenMission.Text = "Open DCS Mission";
         miOpenMission.Click += miOpenMission_Click;
         // 
@@ -76,9 +76,9 @@ partial class frmMain {
         lbMizGroups.Font = new Font("Segoe UI", 10F);
         lbMizGroups.FormattingEnabled = true;
         lbMizGroups.ItemHeight = 17;
-        lbMizGroups.Location = new Point(19, 137);
+        lbMizGroups.Location = new Point(19, 121);
         lbMizGroups.Name = "lbMizGroups";
-        lbMizGroups.Size = new Size(567, 378);
+        lbMizGroups.Size = new Size(567, 327);
         lbMizGroups.Sorted = true;
         lbMizGroups.TabIndex = 1;
         lbMizGroups.SelectedIndexChanged += lbMizGroups_SelectedIndexChanged;
@@ -86,9 +86,9 @@ partial class frmMain {
         // label1
         // 
         label1.AutoSize = true;
-        label1.Location = new Point(19, 67);
+        label1.Location = new Point(19, 59);
         label1.Name = "label1";
-        label1.Size = new Size(113, 17);
+        label1.Size = new Size(102, 15);
         label1.TabIndex = 2;
         label1.Text = "Groups in mission";
         // 
@@ -97,10 +97,10 @@ partial class frmMain {
         lbApplyTo.Font = new Font("Segoe UI", 10F);
         lbApplyTo.FormattingEnabled = true;
         lbApplyTo.ItemHeight = 17;
-        lbApplyTo.Location = new Point(618, 137);
+        lbApplyTo.Location = new Point(618, 121);
         lbApplyTo.Name = "lbApplyTo";
         lbApplyTo.SelectionMode = SelectionMode.MultiExtended;
-        lbApplyTo.Size = new Size(282, 378);
+        lbApplyTo.Size = new Size(282, 327);
         lbApplyTo.Sorted = true;
         lbApplyTo.TabIndex = 4;
         lbApplyTo.SelectedIndexChanged += lbApplyTo_SelectedIndexChanged;
@@ -108,18 +108,18 @@ partial class frmMain {
         // lblApplyToTypes
         // 
         lblApplyToTypes.AutoSize = true;
-        lblApplyToTypes.Location = new Point(618, 27);
+        lblApplyToTypes.Location = new Point(618, 24);
         lblApplyToTypes.Name = "lblApplyToTypes";
-        lblApplyToTypes.Size = new Size(147, 17);
+        lblApplyToTypes.Size = new Size(133, 15);
         lblApplyToTypes.TabIndex = 4;
         lblApplyToTypes.Text = "Apply template to types";
         // 
         // btnApply
         // 
         btnApply.Font = new Font("Segoe UI", 10F);
-        btnApply.Location = new Point(797, 567);
+        btnApply.Location = new Point(797, 500);
         btnApply.Name = "btnApply";
-        btnApply.Size = new Size(103, 37);
+        btnApply.Size = new Size(103, 33);
         btnApply.TabIndex = 6;
         btnApply.Text = "Apply";
         btnApply.UseVisualStyleBackColor = true;
@@ -127,9 +127,9 @@ partial class frmMain {
         // 
         // btnSelectAll
         // 
-        btnSelectAll.Location = new Point(618, 58);
+        btnSelectAll.Location = new Point(618, 51);
         btnSelectAll.Name = "btnSelectAll";
-        btnSelectAll.Size = new Size(113, 26);
+        btnSelectAll.Size = new Size(113, 23);
         btnSelectAll.TabIndex = 2;
         btnSelectAll.Text = "SELECT ALL";
         btnSelectAll.UseVisualStyleBackColor = true;
@@ -137,9 +137,9 @@ partial class frmMain {
         // 
         // btnClear
         // 
-        btnClear.Location = new Point(825, 58);
+        btnClear.Location = new Point(825, 51);
         btnClear.Name = "btnClear";
-        btnClear.Size = new Size(75, 26);
+        btnClear.Size = new Size(75, 23);
         btnClear.TabIndex = 3;
         btnClear.Text = "CLEAR";
         btnClear.UseVisualStyleBackColor = true;
@@ -148,24 +148,24 @@ partial class frmMain {
         // lblSelectedGroupInfo
         // 
         lblSelectedGroupInfo.Font = new Font("Segoe UI", 12F);
-        lblSelectedGroupInfo.Location = new Point(19, 534);
+        lblSelectedGroupInfo.Location = new Point(19, 471);
         lblSelectedGroupInfo.Name = "lblSelectedGroupInfo";
-        lblSelectedGroupInfo.Size = new Size(567, 74);
+        lblSelectedGroupInfo.Size = new Size(567, 65);
         lblSelectedGroupInfo.TabIndex = 9;
         // 
         // txtGroupsFilter
         // 
-        txtGroupsFilter.Location = new Point(19, 103);
+        txtGroupsFilter.Location = new Point(19, 91);
         txtGroupsFilter.Name = "txtGroupsFilter";
-        txtGroupsFilter.Size = new Size(528, 25);
+        txtGroupsFilter.Size = new Size(528, 23);
         txtGroupsFilter.TabIndex = 10;
         txtGroupsFilter.KeyUp += txtGroupsFilter_KeyUp;
         // 
         // btnClearGroupsFilter
         // 
-        btnClearGroupsFilter.Location = new Point(554, 103);
+        btnClearGroupsFilter.Location = new Point(554, 91);
         btnClearGroupsFilter.Name = "btnClearGroupsFilter";
-        btnClearGroupsFilter.Size = new Size(32, 26);
+        btnClearGroupsFilter.Size = new Size(32, 23);
         btnClearGroupsFilter.TabIndex = 11;
         btnClearGroupsFilter.Text = "X";
         btnClearGroupsFilter.UseVisualStyleBackColor = true;
@@ -173,17 +173,17 @@ partial class frmMain {
         // 
         // txtApplyToFilter
         // 
-        txtApplyToFilter.Location = new Point(618, 103);
+        txtApplyToFilter.Location = new Point(618, 91);
         txtApplyToFilter.Name = "txtApplyToFilter";
-        txtApplyToFilter.Size = new Size(243, 25);
+        txtApplyToFilter.Size = new Size(243, 23);
         txtApplyToFilter.TabIndex = 12;
         txtApplyToFilter.KeyUp += txtApplyToFilter_KeyUp;
         // 
         // btnClearApplyToFilter
         // 
-        btnClearApplyToFilter.Location = new Point(867, 103);
+        btnClearApplyToFilter.Location = new Point(867, 91);
         btnClearApplyToFilter.Name = "btnClearApplyToFilter";
-        btnClearApplyToFilter.Size = new Size(32, 26);
+        btnClearApplyToFilter.Size = new Size(32, 23);
         btnClearApplyToFilter.TabIndex = 13;
         btnClearApplyToFilter.Text = "X";
         btnClearApplyToFilter.UseVisualStyleBackColor = true;
@@ -192,17 +192,17 @@ partial class frmMain {
         // lblTemplateGroupDescription
         // 
         lblTemplateGroupDescription.AutoSize = true;
-        lblTemplateGroupDescription.Location = new Point(19, 33);
+        lblTemplateGroupDescription.Location = new Point(19, 29);
         lblTemplateGroupDescription.Name = "lblTemplateGroupDescription";
-        lblTemplateGroupDescription.Size = new Size(567, 17);
+        lblTemplateGroupDescription.Size = new Size(508, 15);
         lblTemplateGroupDescription.TabIndex = 14;
         lblTemplateGroupDescription.Text = "Waypoints of selected group will be used to create dynamic spawn templates for selected types";
         // 
         // frmMain
         // 
-        AutoScaleDimensions = new SizeF(7F, 17F);
+        AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(911, 618);
+        ClientSize = new Size(911, 545);
         Controls.Add(lblTemplateGroupDescription);
         Controls.Add(btnClearApplyToFilter);
         Controls.Add(txtApplyToFilter);
@@ -219,7 +219,7 @@ partial class frmMain {
         Controls.Add(menuMain);
         MainMenuStrip = menuMain;
         Name = "frmMain";
-        Text = "Dynamic Spawn Template Helper 0.1.1";
+        Text = "Dynamic Spawn Template Helper 0.1.2";
         Load += frmMain_Load;
         menuMain.ResumeLayout(false);
         menuMain.PerformLayout();
