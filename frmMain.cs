@@ -273,6 +273,7 @@ public partial class frmMain : Form {
             LuaTable firstUnit = unitsTable[1] as LuaTable;
             firstUnit["name"] = $"{groupPrefix}-1";
             firstUnit["unitId"] = currentUnitId;
+            firstUnit["frequency"] = typeItem.Frequency;
             firstUnit["type"] = typeItem.DCSType;
             firstUnit["skill"] = "Client";
             //? Payload

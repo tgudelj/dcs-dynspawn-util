@@ -18,13 +18,15 @@ public class DCSTypeInfo {
 
     }
 
-    public DCSTypeInfo(string displayName, string dCSType, string category) {
+    public DCSTypeInfo(string displayName, string dCSType, string category, long frequency) {
         DisplayName = displayName;
         DCSType = dCSType;
         Category = category;
+        Frequency = frequency;
     }
 
     public string DisplayName {  get; set; }
     public string DCSType { get; set; }
+    public long Frequency {  get; set; }
     public string Category { get; set; }
 }
