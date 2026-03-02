@@ -221,7 +221,7 @@ partial class frmMain {
         Controls.Add(menuMain);
         MainMenuStrip = menuMain;
         Name = "frmMain";
-        Text = "Dynamic Spawn Template Helper 0.1.4";
+        Text = "Dynamic Spawn Template Helper 0.2";
         Load += frmMain_Load;
         menuMain.ResumeLayout(false);
         menuMain.PerformLayout();
