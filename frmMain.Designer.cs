@@ -1,4 +1,4 @@
-﻿namespace DCSDynamicTemplateHelper;
+namespace DCSDynamicTemplateHelper;
 
 partial class frmMain {
     /// <summary>
@@ -27,6 +27,7 @@ partial class frmMain {
         menuMain = new MenuStrip();
         fileToolStripMenuItem = new ToolStripMenuItem();
         miOpenMission = new ToolStripMenuItem();
+        helpToolStripMenuItem = new ToolStripMenuItem();
         dlgOpenFile = new OpenFileDialog();
         lbMizGroups = new ListBox();
         label1 = new Label();
@@ -46,7 +47,7 @@ partial class frmMain {
         // 
         // menuMain
         // 
-        menuMain.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
+        menuMain.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, helpToolStripMenuItem });
         menuMain.Location = new Point(0, 0);
         menuMain.Name = "menuMain";
         menuMain.Size = new Size(911, 24);
@@ -66,6 +67,13 @@ partial class frmMain {
         miOpenMission.Size = new Size(172, 22);
         miOpenMission.Text = "Open DCS Mission";
         miOpenMission.Click += miOpenMission_Click;
+        // 
+        // helpToolStripMenuItem
+        // 
+        helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+        helpToolStripMenuItem.Size = new Size(44, 20);
+        helpToolStripMenuItem.Text = "Help";
+        helpToolStripMenuItem.Click += helpToolStripMenuItem_Click;
         // 
         // dlgOpenFile
         // 
@@ -221,7 +229,7 @@ partial class frmMain {
         Controls.Add(menuMain);
         MainMenuStrip = menuMain;
         Name = "frmMain";
-        Text = "Dynamic Spawn Template Helper 0.2";
+        Text = "Dynamic Spawn Template Helper 0.9";
         Load += frmMain_Load;
         menuMain.ResumeLayout(false);
         menuMain.PerformLayout();
@@ -234,6 +242,7 @@ partial class frmMain {
     private MenuStrip menuMain;
     private ToolStripMenuItem fileToolStripMenuItem;
     private ToolStripMenuItem miOpenMission;
+    private ToolStripMenuItem helpToolStripMenuItem;
     private OpenFileDialog dlgOpenFile;
     private ListBox lbMizGroups;
     private Label label1;
@@ -249,3 +258,5 @@ partial class frmMain {
     private Button btnClearApplyToFilter;
     private Label lblTemplateGroupDescription;
 }
+
+
